@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Mi asistencia · Exellenti{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h1>Mi asistencia</h1>
+    <p class="sub">{{ student.full_name }} · {{ student.grade.nombre if student.grade else '' }}</p>
+  </div>
+</div>
+<form class="row" method="get">
+  <div>
+    <label>Marca</label>
+    <select name="marca" onchange="this.form.submit()">
+      <option value="">Todas</option>
+      {% for v, lab in [('presente','Presente'),('falta','Falta'),('tardanza','Tardanza'),('justificada','Justificada')] %}
+        <option value="{{ v }}" {% if marca == v %}selected{% endif %}>{{ lab }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</form>
+<div class="grid">
+  <div class="card stat"><div class="k">Días registrados</div><div class="v">{{ summary.total }}</div></div>
+  <div class="card stat"><div class="k">Presente</div><div class="v">{{ summary.presente }}</div></div>
+  <div class="card stat"><div class="k">Faltas</div><div class="v">{{ summary.falta }}</div></div>
+  <div class="card stat"><div class="k">Tardanzas</div><div class="v">{{ summary.tardanza }}</div></div>
+</div>
+<div class="card" style="margin-bottom:16px">
+  <h3 style="margin:0 0 10px">Resumen</h3>
+  <div data-bars='{{ [{"label":"Presente","value":summary.presente,"color":"#1f7a4d"},{"label":"Tardanza","value":summary.tardanza,"color":"#b58112"},{"label":"Falta","value":summary.falta,"color":"#b42318"},{"label":"Justif.","value":summary.justificada,"color":"#1b6b93"}] | tojson }}'></div>
+</div>
+<div class="card">
+<table>
+  <thead><tr><th>Fecha</th><th>Marca</th></tr></thead>
+  <tbody>
+  {% for a in att %}
+    <tr><td>{{ a.fecha.strftime('%d/%m/%Y') }}</td><td>{{ a.estado }}</td></tr>
+  {% else %}
+    <tr><td colspan="2" class="muted">No hay marcas con ese filtro.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

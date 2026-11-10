@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}{{ student.full_name }} · Exellenti{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h1>{{ student.full_name }}</h1>
+    <p class="sub">{{ student.codigo }} · {{ student.grade.nombre if student.grade else 'Sin grado' }} · Tutor: {{ tutor }} · DNI {{ student.dni or '—' }}{% if student.fecha_nacimiento %} · Nac. {{ student.fecha_nacimiento.strftime('%d/%m/%Y') }}{% endif %}</p>
+  </div>
+  {% if pred %}
+    <div>
+      <span class="badge b-{{ pred.nivel_riesgo }}">atención {{ pred.nivel_riesgo }} · {{ '%.0f'|format(pred.probabilidad * 100) }}%</span>
+      {% if not is_portal %}
+      <div class="muted">Prioridad {{ pred.prioridad }} · modelo {{ pred.nivel_modelo or '—' }} · {{ pred.modelo }}</div>
+      <div class="muted">La probabilidad es del modelo. El nivel de atención es una regla institucional por salón.</div>
+      {% else %}
+      <div class="muted">Su nivel de atención en el salón. Prioridad {{ pred.prioridad }}.</div>
+      {% endif %}
+    </div>
+  {% endif %}
+  {% if can_manage %}
+    <div>
+      <a class="btn sec" href="/estudiantes/{{ student.id }}/editar">Editar ficha</a>
+      <form method="post" action="/estudiantes/{{ student.id }}/estado" style="display:inline">
+        {% include "_csrf.html" %}
+        {% if student.estado == 'activo' %}
+          <input type="hidden" name="estado" value="retirado">
+          <button class="btn danger" type="submit" data-confirm="¿Dar de baja a este estudiante? Dejará de aparecer en evaluación y asistencia.">Dar de baja</button>
+        {% else %}
+          <input type="hidden" name="estado" value="activo">
+          <button class="btn" type="submit">Reactivar</button>
+        {% endif %}
+      </form>
+    </div>
+  {% endif %}
+  <button class="btn sec" type="button" onclick="window.print()">Imprimir ficha</button>
+</div>
+
+<div class="card ficha" style="margin-bottom:16px">
+  <h3 style="margin:0 0 10px">Ficha de matrícula</h3>
+  <div class="two">
+    <dl>
+      <dt>Código</dt><dd>{{ student.codigo }}</dd>
+      <dt>DNI</dt><dd>{{ student.dni or '—' }}</dd>
+      <dt>Sexo</dt><dd>{{ student.sexo }}</dd>
+      <dt>Nacimiento</dt><dd>{% if student.fecha_nacimiento %}{{ student.fecha_nacimiento.strftime('%d/%m/%Y') }} ({{ student.edad }} años){% else %}—{% endif %}</dd>
+      <dt>Salón</dt><dd>{{ student.grade.nombre if student.grade else '—' }}</dd>
+      <dt>Tipo</dt><dd>{{ tipo_mat_labels.get(student.tipo_matricula, student.tipo_matricula or 'Regular') }} · {{ turno_labels.get(student.turno, 'Mañana') }}</dd>
+      <dt>Fecha matrícula</dt><dd>{{ student.fecha_matricula.strftime('%d/%m/%Y') if student.fecha_matricula else '—' }}</dd>
+      <dt>IE procedencia</dt><dd>{{ student.ie_procedencia or '—' }}</dd>
+    </dl>
+    <dl>
+      <dt>Dirección</dt><dd>{{ student.direccion or '—' }}{% if student.distrito %}, {{ student.distrito }}{% endif %}</dd>
+      <dt>Referencia</dt><dd>{{ student.referencia or '—' }}</dd>
+      <dt>Apoderado</dt><dd>{{ student.apoderado or '—' }} · {{ parentesco_labels.get(student.parentesco, student.parentesco or '') }}</dd>
+      <dt>DNI apoderado</dt><dd>{{ student.dni_apoderado or '—' }}</dd>
+      <dt>Celular</dt><dd>{{ student.telefono_apoderado or '—' }}</dd>
+      <dt>Correo</dt><dd>{{ student.correo_apoderado or '—' }}</dd>
+      <dt>Lengua / vive con</dt><dd>{{ lengua_labels.get(student.lengua_materna, student.lengua_materna or '—') }} · {{ vive_labels.get(student.vive_con, student.vive_con or '—') }}</dd>
+      <dt>Seguro / NEE</dt><dd>{{ seguro_labels.get(student.seguro, student.seguro or '—') }} · {% if student.nnee %}Sí{% else %}No{% endif %} · {{ discap_labels.get(student.discapacidad, student.discapacidad or 'Ninguna') }}</dd>
+    </dl>
+  </div>
+  {% if student.observaciones %}<p class="muted" style="margin:10px 0 0">{{ student.observaciones }}</p>{% endif %}
+</div>
+
+<div class="two">
+  <div class="card">
+    <h3 style="margin:0 0 10px">Calificaciones (vigesimal y nivel de logro)</h3>
+    <table>
+      <thead><tr><th>Área</th><th>Bim. 1</th><th></th><th>Bim. 2</th><th></th></tr></thead>
+      <tbody>
+      {% for c in courses %}
+        {% set n1 = records.get((c.id, 1)) %}
+        {% set n2 = records.get((c.id, 2)) %}
+        <tr>
+          <td>{{ c.nombre }}</td>
+          <td>{{ n1 if n1 is not none else '-' }}</td>
+          <td>{% if n1 is not none %}{{ achievement(n1) }}{% endif %}</td>
+          <td>{{ n2 if n2 is not none else '-' }}</td>
+          <td>{% if n2 is not none %}{{ achievement(n2) }}{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p class="muted">AD 17–20 · A 14–16 · B 11–13 · C 0–10</p>
+    {% if progress %}
+      <p><span class="good">Va bien:</span> {{ progress.bien|join(', ') or '—' }}</p>
+      <p>En proceso: {{ progress.proceso|join(', ') or '—' }}</p>
+      <p><span class="bad">Necesita refuerzo:</span> {{ progress.mal|join(', ') or '—' }}</p>
+    {% endif %}
+  </div>
+  <div>
+    <div class="card" style="margin-bottom:12px">
+      <h3 style="margin:0 0 10px">Asistencia</h3>
+      <p>Días: {{ summary.total }} · Presente {{ summary.presente }} · Faltas {{ summary.falta }} · Tardanzas {{ summary.tardanza }} · Justificadas {{ summary.justificada }}</p>
+      <p><b>Apoderado:</b> {{ student.apoderado or '—' }} · {{ student.telefono_apoderado or '—' }}</p>
+      {% if docentes_aula %}
+        <p><b>Tutor de aula:</b> {{ tutor }}</p>
+        <p><b>Quién dicta cada área</b></p>
+        <table>
+          {% for d in docentes_aula %}
+            <tr><td>{{ d.curso }}</td><td>{{ d.docente }}</td></tr>
+          {% endfor %}
+        </table>
+      {% endif %}
+    </div>
+    <div class="card">
+      {% if can_see_risk and features %}
+      <h3 style="margin:0 0 10px">Variables del modelo</h3>
+      <table>
+        {% for k, v in features.items() %}
+          <tr><td>{{ feature_labels.get(k, k) }}</td><td>{{ v }}</td></tr>
+        {% endfor %}
+      </table>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% if progress %}
+<div class="two" style="margin-top:16px">
+  <div class="card">
+    <h3 style="margin:0 0 10px">Promedio por área</h3>
+    <div data-bars='{{ progress.notas_bars | tojson }}'></div>
+  </div>
+  <div class="card">
+    <h3 style="margin:0 0 10px">Asistencia</h3>
+    <div data-bars='{{ progress.asistencia_bars | tojson }}'></div>
+  </div>
+</div>
+{% endif %}
+
+{% if not is_portal %}
+<div class="card" style="margin-top:16px">
+  <h3 style="margin:0 0 10px">Seguimiento</h3>
+  {% for n in student.followups %}
+    <div class="note">
+      <b>{{ n.author.full_name if n.author else 'Sistema' }}</b> · {{ n.created_at.strftime('%d/%m/%Y %H:%M') }}<br>
+      {{ n.contenido }}
+    </div>
+  {% else %}
+    <p class="muted">Sin notas de seguimiento.</p>
+  {% endfor %}
+  {% if can_follow %}
+  <form method="post" action="/estudiantes/{{ student.id }}/seguimiento" class="stack" style="margin-top:10px">
+    {% include "_csrf.html" %}
+    <textarea name="contenido" rows="3" required minlength="10" maxlength="2000" title="Mínimo 10 caracteres." placeholder="Observación de tutoría (mínimo 10 caracteres)"></textarea>
+    <button class="btn" type="submit">Registrar seguimiento</button>
+  </form>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

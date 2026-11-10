@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Reportes · Exellenti{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h1>Reportes</h1>
+    <p class="sub">{{ title }}. Exportable a CSV e imprimible. Sin DNI ni teléfonos.</p>
+  </div>
+  <div>
+    <a class="btn sec" href="/reportes/exportar?tipo={{ tipo }}&grado={{ grado }}&q={{ q }}&estado={{ estado }}">Descargar CSV</a>
+    <button class="btn" type="button" onclick="window.print()">Imprimir</button>
+  </div>
+</div>
+<form class="row" method="get">
+  <div>
+    <label>Tipo</label>
+    <select name="tipo" onchange="this.form.submit()">
+      <option value="priorizados" {% if tipo == 'priorizados' %}selected{% endif %}>Priorizados</option>
+      <option value="rendimiento" {% if tipo == 'rendimiento' %}selected{% endif %}>Rendimiento (bimestres)</option>
+      <option value="asistencia" {% if tipo == 'asistencia' %}selected{% endif %}>Patrones de asistencia</option>
+      <option value="padron" {% if tipo == 'padron' %}selected{% endif %}>Padrón de matrícula</option>
+    </select>
+  </div>
+  <div>
+    <label>Salón</label>
+    <select name="grado" onchange="this.form.submit()">
+      <option value="0">Todos los visibles</option>
+      {% for g in grades %}
+        <option value="{{ g.id }}" {% if grado == g.id %}selected{% endif %}>{{ g.nombre }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Estado</label>
+    <select name="estado" onchange="this.form.submit()">
+      <option value="activo" {% if estado == 'activo' %}selected{% endif %}>Activos</option>
+      <option value="retirado" {% if estado == 'retirado' %}selected{% endif %}>Retirados</option>
+      <option value="todos" {% if estado == 'todos' %}selected{% endif %}>Todos</option>
+    </select>
+  </div>
+  <div>
+    <label>Buscar</label>
+    <input name="q" value="{{ q }}" maxlength="80" placeholder="Estudiante o código">
+  </div>
+  <button class="btn sec" type="submit">Filtrar</button>
+</form>
+<div class="card table-wrap">
+  <p class="muted">{{ institucion }} · {{ anio }} · {{ rows|length }} filas</p>
+  <input data-row-filter="#tabla-reportes" placeholder="Filtrar en la tabla" style="margin-bottom:10px;width:100%;max-width:320px">
+  <table id="tabla-reportes">
+    <thead>
+      <tr>{% for h in headers %}<th>{{ h }}</th>{% endfor %}</tr>
+    </thead>
+    <tbody>
+    {% for row in rows %}
+      <tr>
+        {% for h in headers %}
+          <td>{{ row.get(h, '') }}</td>
+        {% endfor %}
+      </tr>
+    {% else %}
+      <tr><td class="muted" colspan="{{ headers|length }}">No hay filas para este filtro.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

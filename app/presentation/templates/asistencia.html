@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Asistencia · Exellenti{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h1>Asistencia</h1>
+    <p class="sub">Pase de lista del día y patrones del salón (rachas de faltas y porcentaje).</p>
+  </div>
+</div>
+<form class="row" method="get">
+  <div>
+    <label>Salón</label>
+    <select name="grado" onchange="this.form.submit()">
+      <option value="0">Seleccionar</option>
+      {% for g in grades %}
+        <option value="{{ g.id }}" {% if grado == g.id %}selected{% endif %}>{{ g.nombre }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Fecha</label>
+    <input type="date" name="fecha" value="{{ fecha }}" min="{{ fecha_min }}" max="{{ fecha_max }}" onchange="this.form.submit()">
+  </div>
+  <div>
+    <label>Patrones</label>
+    <select name="patron" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      <option value="1" {% if solo_patron %}selected{% endif %}>Solo con patrón</option>
+    </select>
+  </div>
+</form>
+
+{% if date_err %}<div class="err">{{ date_err }} El pase de lista no se guarda hasta corregir la fecha.</div>{% endif %}
+{% if not grado %}
+  <div class="card"><p class="muted">Seleccione un salón. Este módulo no registra notas ni riesgo.</p></div>
+{% elif students %}
+{% if patterns %}
+<div class="two" style="margin-bottom:16px">
+  <div class="card">
+    <h3 style="margin:0 0 10px">Marcas acumuladas del salón</h3>
+    <div data-bars='{{ patterns.bars | tojson }}'></div>
+  </div>
+  <div class="card">
+    <h3 style="margin:0 0 10px">Patrones</h3>
+    <p><b>{{ patterns.patron_n }}</b> estudiante(s) con racha de 3 faltas o asistencia menor a 85 %.</p>
+    <p class="muted">Sirve para tutoría. No reemplaza la ficha de Alerta temprana.</p>
+  </div>
+</div>
+<div class="card table-wrap" style="margin-bottom:16px">
+  <h3 style="margin:0 0 10px">Detalle de patrones</h3>
+  <input data-row-filter="#tabla-patrones" placeholder="Filtrar estudiante" style="margin-bottom:10px;width:100%;max-width:320px">
+  <table id="tabla-patrones">
+    <thead><tr><th>Estudiante</th><th>%</th><th>Faltas</th><th>Tardanzas</th><th>Racha máx.</th><th>Seguidas</th><th></th></tr></thead>
+    <tbody>
+    {% for f in patterns.filas %}
+      {% if not solo_patron or f.patron %}
+      <tr {% if f.patron %}class="row-warn"{% endif %}>
+        <td>{{ f.nombre }}</td>
+        <td>{{ f.pct }}%</td>
+        <td>{{ f.faltas }}</td>
+        <td>{{ f.tardanzas }}</td>
+        <td>{{ f.racha }}</td>
+        <td>{{ f.trail }}</td>
+        <td>{% if f.patron %}<span class="badge b-alto">patrón</span>{% endif %}</td>
+      </tr>
+      {% endif %}
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+<form method="post">
+  {% include "_csrf.html" %}
+  <input type="hidden" name="grado" value="{{ grado }}">
+  <input type="hidden" name="fecha" value="{{ fecha }}">
+  <div class="card table-wrap">
+    <h3 style="margin:0 0 10px">Pase de lista · {{ fecha }}</h3>
+    <input data-row-filter="#tabla-lista" placeholder="Filtrar estudiante" style="margin-bottom:10px;width:100%;max-width:320px">
+    <table id="tabla-lista">
+      <thead><tr><th>Estudiante</th><th>Marca</th></tr></thead>
+      <tbody>
+      {% for s in students %}
+        {% set m = marks.get(s.id, 'presente') %}
+        <tr>
+          <td>{{ s.full_name }}</td>
+          <td class="radio-row">
+            {% for val, lab in [('presente','Presente'),('falta','Falta'),('tardanza','Tardanza'),('justificada','Justificada')] %}
+              <label><input type="radio" name="a_{{ s.id }}" value="{{ val }}" {% if m == val %}checked{% endif %} {% if not can_edit %}disabled{% endif %}> {{ lab }}</label>
+            {% endfor %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if can_edit %}<p><button class="btn" type="submit">Guardar asistencia</button></p>{% endif %}
+</form>
+{% else %}
+  <p class="muted">No hay estudiantes en ese salón.</p>
+{% endif %}
+{% endblock %}

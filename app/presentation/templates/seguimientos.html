@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Seguimientos · Exellenti{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h1>Seguimientos</h1>
+    <p class="sub">Notas de tutoría sobre estudiantes de su carga. El registro se hace en la ficha. · {{ notes|length }} nota(s)</p>
+  </div>
+</div>
+<form class="row" method="get">
+  <div>
+    <label>Salón</label>
+    <select name="grado" onchange="this.form.submit()">
+      <option value="0">Todos</option>
+      {% for g in grades %}
+        <option value="{{ g.id }}" {% if grado == g.id %}selected{% endif %}>{{ g.nombre }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Buscar</label>
+    <input name="q" value="{{ q }}" maxlength="80" placeholder="Estudiante, código o texto" autocomplete="off">
+  </div>
+  <button class="btn sec" type="submit">Filtrar</button>
+</form>
+<div class="card">
+  {% for n in notes %}
+    <div class="note">
+      <b>{{ n.student.full_name if n.student else '—' }}</b>
+      · {{ n.student.grade.nombre if n.student and n.student.grade else 'Sin salón' }}
+      · {{ n.author.full_name if n.author else 'Sistema' }}
+      · {{ n.created_at.strftime('%d/%m/%Y %H:%M') }}
+      {% if n.student %}<a href="/estudiantes/{{ n.student.id }}">Ficha</a>{% endif %}
+      <br>{{ n.contenido }}
+    </div>
+  {% else %}
+    <p class="muted">No hay seguimientos con ese criterio. Ábralos desde la ficha del estudiante.</p>
+  {% endfor %}
+</div>
+{% endblock %}

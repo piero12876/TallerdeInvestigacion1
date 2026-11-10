@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Matrícula · Exellenti{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h1>Matrícula</h1>
+    <p class="sub">Padrón del salón: identidad, domicilio, apoderado y tipo de matrícula. El riesgo se consulta en Alerta temprana. · {{ rows|length }} registros</p>
+  </div>
+  <div>
+    <a class="btn sec" href="/estudiantes/exportar?grado={{ grado }}&amp;estado={{ estado }}&amp;sexo={{ sexo }}&amp;lengua={{ lengua }}&amp;tipo={{ tipo }}&amp;nnee={{ nnee }}&amp;q={{ q }}">Descargar padrón CSV</a>
+    {% if can_manage %}<a class="btn" href="/estudiantes/nuevo">Nueva matrícula</a>{% endif %}
+  </div>
+</div>
+<form class="row" method="get">
+  <div>
+    <label>Salón</label>
+    <select name="grado" onchange="this.form.submit()">
+      <option value="0">Todos</option>
+      {% for g in grades %}
+        <option value="{{ g.id }}" {% if grado == g.id %}selected{% endif %}>{{ g.nombre }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Estado</label>
+    <select name="estado" onchange="this.form.submit()">
+      <option value="activo" {% if estado == 'activo' %}selected{% endif %}>Activos</option>
+      <option value="retirado" {% if estado == 'retirado' %}selected{% endif %}>Retirados</option>
+      <option value="todos" {% if estado == 'todos' %}selected{% endif %}>Todos</option>
+    </select>
+  </div>
+  <div>
+    <label>Sexo</label>
+    <select name="sexo" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      <option value="M" {% if sexo == 'M' %}selected{% endif %}>M</option>
+      <option value="F" {% if sexo == 'F' %}selected{% endif %}>F</option>
+    </select>
+  </div>
+  <div>
+    <label>Lengua</label>
+    <select name="lengua" onchange="this.form.submit()">
+      <option value="">Todas</option>
+      {% for k, lab in lengua_labels.items() %}
+        <option value="{{ k }}" {% if lengua == k %}selected{% endif %}>{{ lab }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Tipo</label>
+    <select name="tipo" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      {% for k, lab in tipo_mat_labels.items() %}
+        <option value="{{ k }}" {% if tipo == k %}selected{% endif %}>{{ lab }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>NEE</label>
+    <select name="nnee" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      <option value="1" {% if nnee == '1' %}selected{% endif %}>Con NEE</option>
+      <option value="0" {% if nnee == '0' %}selected{% endif %}>Sin NEE</option>
+    </select>
+  </div>
+  <div>
+    <label>Buscar</label>
+    <input name="q" value="{{ q }}" maxlength="80" placeholder="Nombre, código, DNI o apoderado" autocomplete="off">
+  </div>
+  <button class="btn sec" type="submit">Filtrar</button>
+</form>
+{% if resumen %}
+<div class="grid">
+  <div class="card stat"><div class="k">En lista</div><div class="v">{{ resumen.n }}</div></div>
+  <div class="card stat"><div class="k">M / F</div><div class="v">{{ resumen.m }} / {{ resumen.f }}</div></div>
+  <div class="card stat"><div class="k">Traslado</div><div class="v">{{ resumen.traslado }}</div></div>
+  <div class="card stat"><div class="k">Quechua · NEE</div><div class="v">{{ resumen.quechua }} · {{ resumen.nnee }}</div></div>
+</div>
+{% endif %}
+<div class="card table-wrap">
+<input data-row-filter="#tabla-matricula" placeholder="Filtrar en la tabla" style="margin-bottom:10px;width:100%;max-width:320px">
+<table id="tabla-matricula">
+  <thead>
+    <tr><th>Código</th><th>Estudiante</th><th>DNI</th><th>Sexo</th><th>Edad</th><th>Salón</th><th>Tipo</th><th>Apoderado</th><th>Estado</th></tr>
+  </thead>
+  <tbody>
+  {% for s in rows %}
+    <tr>
+      <td>{{ s.codigo }}</td>
+      <td><a href="/estudiantes/{{ s.id }}">{{ s.full_name }}</a></td>
+      <td>{{ s.dni or '—' }}</td>
+      <td>{{ s.sexo }}</td>
+      <td>{{ s.edad if s.edad is not none else '—' }}</td>
+      <td>{{ s.grade.nombre if s.grade else '-' }}</td>
+      <td>{{ tipo_mat_labels.get(s.tipo_matricula, s.tipo_matricula or '—') }}</td>
+      <td>{{ s.apoderado or '—' }}{% if s.telefono_apoderado %}<br><span class="muted">{{ s.telefono_apoderado }}</span>{% endif %}</td>
+      <td><span class="badge b-{{ s.estado }}">{{ status_labels.get(s.estado, s.estado) }}</span></td>
+    </tr>
+  {% else %}
+    <tr><td colspan="9" class="muted">No hay estudiantes con ese criterio.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Modelo ML · Exellenti{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h1>Evaluación del modelo</h1>
+    <p class="sub">Comparación con validación cruzada estratificada. Se elige por Recall y F1. El balanceo (réplica del minoritario, no SMOTE) ocurre solo dentro de cada fold de entrenamiento.</p>
+  </div>
+  {% if user.role == 'directora' %}
+  <form method="post" action="/modelo/reentrenar" onsubmit="return confirm('¿Reentrenar el modelo y recalcular la priorización?');">
+    {% include "_csrf.html" %}
+    <button class="btn danger" type="submit">Reentrenar y priorizar</button>
+  </form>
+  {% endif %}
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <p><b>Qué mide el modelo y qué no.</b> El clasificador estima la <i>probabilidad de deserción</i> (sí/no) a partir de notas y asistencia. El badge alto/medio/bajo de las listas de atención es una <b>regla institucional por salón</b> (1 alto y 4 medio) para ordenar tutoría. No es la etiqueta cruda del algoritmo. En cada ficha se muestran ambos.</p>
+  <p class="muted">Los registros históricos son un entorno sintético de tesis (no el padrón real de la IE). Las métricas no deben citarse como desempeño sobre datos institucionales reales.</p>
+</div>
+
+{% if selected %}
+<div class="grid">
+  <div class="card stat"><div class="k">Algoritmo</div><div class="v" style="font-size:20px">{{ selected.algoritmo }}</div></div>
+  <div class="card stat"><div class="k">Recall (OOF)</div><div class="v">{{ '%.3f'|format(selected.recall) }} ± {{ '%.3f'|format(selected.recall_std) }}</div></div>
+  <div class="card stat"><div class="k">F1 (OOF)</div><div class="v">{{ '%.3f'|format(selected.f1) }} ± {{ '%.3f'|format(selected.f1_std) }}</div></div>
+  <div class="card stat"><div class="k">PR-AUC</div><div class="v">{{ '%.3f'|format(selected.pr_auc) }}</div></div>
+</div>
+<div class="two">
+  <div class="card">
+    <h3 style="margin:0 0 10px">Matriz de confusión (predicciones fuera de fold)</h3>
+    <table>
+      <thead><tr><th></th><th>Pred. no deserción</th><th>Pred. deserción</th></tr></thead>
+      <tbody>
+        <tr><th>Real no deserción</th><td>{{ selected.vn }}</td><td>{{ selected.fp }}</td></tr>
+        <tr><th>Real deserción</th><td>{{ selected.fn }}</td><td>{{ selected.vp }}</td></tr>
+      </tbody>
+    </table>
+    <p class="muted">{{ selected.nota }}</p>
+  </div>
+  <div class="card">
+    <h3 style="margin:0 0 10px">Métricas</h3>
+    <table>
+      <tr><td>Accuracy</td><td>{{ '%.3f'|format(selected.accuracy) }}</td></tr>
+      <tr><td>Precision</td><td>{{ '%.3f'|format(selected.precision) }}</td></tr>
+      <tr><td>Recall</td><td>{{ '%.3f'|format(selected.recall) }}</td></tr>
+      <tr><td>F1-Score</td><td>{{ '%.3f'|format(selected.f1) }}</td></tr>
+      <tr><td>ROC-AUC</td><td>{{ '%.3f'|format(selected.roc_auc) }}</td></tr>
+      <tr><td>PR-AUC</td><td>{{ '%.3f'|format(selected.pr_auc) }}</td></tr>
+      <tr><td>Folds</td><td>{{ selected.cv_folds }}</td></tr>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<div class="card" style="margin-top:16px">
+  <h3 style="margin:0 0 10px">Comparación de algoritmos</h3>
+  <table>
+    <thead><tr><th>Algoritmo</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th><th>AUC</th><th>PR-AUC</th><th></th></tr></thead>
+    <tbody>
+    {% for r in runs %}
+      <tr>
+        <td>{{ r.algoritmo }}</td>
+        <td>{{ '%.3f'|format(r.accuracy) }}</td>
+        <td>{{ '%.3f'|format(r.precision) }}</td>
+        <td>{{ '%.3f'|format(r.recall) }}</td>
+        <td>{{ '%.3f'|format(r.f1) }}</td>
+        <td>{{ '%.3f'|format(r.roc_auc) }}</td>
+        <td>{{ '%.3f'|format(r.pr_auc) }}</td>
+        <td>{% if r.selected %}Seleccionado{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="card" style="margin-top:16px">
+  <h3 style="margin:0 0 10px">Fuentes del componente predictivo</h3>
+  <p>Chung, J. Y., &amp; Lee, S. (2019). Dropout early warning systems for high school students using machine learning. <i>Children and Youth Services Review, 96</i>, 346–353. <a href="https://doi.org/10.1016/j.childyouth.2018.11.030">https://doi.org/10.1016/j.childyouth.2018.11.030</a></p>
+  <p>Lee, S., &amp; Chung, J. Y. (2019). The machine learning-based dropout early warning system for improving the performance of dropout prediction. <i>Applied Sciences, 9</i>(15), 3093. <a href="https://doi.org/10.3390/app9153093">https://doi.org/10.3390/app9153093</a></p>
+  <p>Alalawi, K., Athauda, R., &amp; Chiong, R. (2023). Contextualizing the current state of research on the use of machine learning for student performance prediction. <i>Education and Information Technologies</i>.</p>
+  <p class="muted">Variables: rendimiento, áreas desaprobadas, tendencia, asistencia, faltas no justificadas y tardanzas. El sistema no decide la intervención; prioriza casos para tutoría. Algoritmos comparados: regresión logística, Naive Bayes, SVM, Random Forest y árboles impulsados.</p>
+</div>
+{% endblock %}

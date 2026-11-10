@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Product Backlog · Exellenti{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h1>Product Backlog (Scrum)</h1>
+    <p class="sub">Organización del desarrollo del sistema web según el plan de tesis. Cuatro incrementos: datos, modelo, priorización y evaluación. · {{ items|length }} ítem(s)</p>
+  </div>
+</div>
+<form class="row" method="get">
+  <div>
+    <label>Sprint</label>
+    <select name="sprint" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      {% for s in sprints %}
+        <option value="{{ s }}" {% if sprint == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Estado</label>
+    <select name="estado" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      {% for e in estados %}
+        <option value="{{ e }}" {% if estado == e %}selected{% endif %}>{{ e }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</form>
+<div class="card">
+<input data-row-filter="#tabla-scrum" placeholder="Filtrar ítem" style="margin-bottom:10px;width:100%;max-width:320px">
+<table id="tabla-scrum">
+  <thead><tr><th>Ítem</th><th>Sprint</th><th>Estado</th><th>Criterio de aceptación</th></tr></thead>
+  <tbody>
+  {% for i in items %}
+    <tr>
+      <td><b>{{ i.codigo }}</b><br>{{ i.titulo }}</td>
+      <td>{{ i.sprint }}</td>
+      <td><span class="badge b-bajo">{{ i.estado }}</span></td>
+      <td>{{ i.criterio }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

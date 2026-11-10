@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Inicio · Exellenti{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h1>{% if user.role == 'docente' %}Panel docente{% elif user.role == 'estudiante' %}Mi portal{% else %}Panel de dirección{% endif %}</h1>
+    <p class="sub">{{ institucion }} · {{ anio }}. {% if user.role == 'docente' and panel %}{% if panel.es_aula %}Docente de aula: dicta todas las áreas y registra la asistencia.{% elif panel.es_tutor %}Tutor de salón: encargado del grupo, sin dictar áreas.{% else %}Docente de área: solo los cursos y salones que le fueron asignados.{% endif %}{% else %}Cada módulo hace una sola cosa.{% endif %}</p>
+  </div>
+</div>
+
+{% if user.role == 'directora' %}
+<div class="mods">
+  <a class="mod" href="/estudiantes"><span class="k">Matrícula</span><strong>{{ snap.matriculados }}</strong><span>Alumnos activos en 18 salones</span></a>
+  <a class="mod" href="/calificaciones"><span class="k">Evaluación</span><strong>{{ snap.promedio_ie }}</strong><span>Promedio institucional 0–20</span></a>
+  <a class="mod" href="/asistencia"><span class="k">Asistencia</span><strong>{{ snap.asistencia_pct }}%</strong><span>Pase de lista por tutor de aula</span></a>
+  <a class="mod" href="/riesgo"><span class="k">Alerta temprana</span><strong>{{ counts.alto }}</strong><span>Casos de atención alta</span></a>
+  <a class="mod" href="/docentes"><span class="k">Personal</span><strong>{{ snap.docentes }}</strong><span>Aula 1.°–2.° · área desde 3.°</span></a>
+  <a class="mod" href="/modelo"><span class="k">Modelo</span><strong>{{ snap.tutores }}</strong><span>Tutores · métricas OOF</span></a>
+</div>
+<div class="card">
+  <h3 style="margin:0 0 10px">Atención inmediata</h3>
+  <p class="muted">Los cinco primeros de la lista priorizada. El detalle está en Alerta temprana.</p>
+  <table>
+    <thead><tr><th>#</th><th>Estudiante</th><th>Salón</th><th>Atención</th></tr></thead>
+    <tbody>
+    {% for p in preds[:5] %}
+      <tr>
+        <td>{{ p.prioridad }}</td>
+        <td><a href="/estudiantes/{{ p.student.id }}">{{ p.student.full_name }}</a></td>
+        <td>{{ p.student.grade.nombre if p.student.grade else '-' }}</td>
+        <td><span class="badge b-{{ p.nivel_riesgo }}">{{ p.nivel_riesgo }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% elif user.role == 'docente' and panel %}
+<div class="mods">
+  <a class="mod" href="/estudiantes"><span class="k">Matrícula</span><strong>{{ panel.alumnos }}</strong><span>Alumnos de mi carga</span></a>
+  {% if panel.cursos %}
+  <a class="mod" href="/calificaciones"><span class="k">Evaluación</span><strong>{{ panel.cursos }}</strong><span>{{ panel.cursos_nombres|join(', ') }}</span></a>
+  {% endif %}
+  {% if panel.es_tutor %}
+  <a class="mod" href="/asistencia"><span class="k">Asistencia</span><strong>{{ panel.salones }}</strong><span>Pase de lista de mi salón</span></a>
+  {% endif %}
+  <a class="mod" href="/riesgo"><span class="k">Alerta temprana</span><strong>{{ panel.alto }}</strong><span>Atención alta en mi carga</span></a>
+  <a class="mod" href="/seguimientos"><span class="k">Seguimientos</span><strong>•</strong><span>Notas de tutoría de mi carga</span></a>
+  <a class="mod" href="/reportes"><span class="k">Reportes</span><strong>{{ panel.salones }}</strong><span>CSV e impresión de mi carga</span></a>
+</div>
+{% if panel.cargas %}
+<div class="card" style="margin-bottom:16px">
+  <h3 style="margin:0 0 10px">Cursos que dicto</h3>
+  <table>
+    <thead><tr><th>Salón</th><th>Área</th></tr></thead>
+    <tbody>
+    {% for c in panel.cargas %}
+      <tr><td>{{ c.salon }}</td><td>{{ c.curso }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+<div class="card">
+  <h3 style="margin:0 0 10px">Alertas de mi carga</h3>
+  <table>
+    <thead><tr><th>#</th><th>Estudiante</th><th>Salón</th><th>Atención</th></tr></thead>
+    <tbody>
+    {% for p in preds[:8] %}
+      <tr>
+        <td>{{ p.prioridad }}</td>
+        <td><a href="/estudiantes/{{ p.student.id }}">{{ p.student.full_name }}</a></td>
+        <td>{{ p.student.grade.nombre if p.student.grade else '-' }}</td>
+        <td><span class="badge b-{{ p.nivel_riesgo }}">{{ p.nivel_riesgo }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% elif user.role == 'estudiante' and student %}
+<div class="mods">
+  <a class="mod" href="/mi-ficha"><span class="k">Mi ficha</span><strong>{{ student.codigo }}</strong><span>Tutor: {{ tutor }}</span></a>
+  <a class="mod" href="/mi-boleta"><span class="k">Mi boleta</span><strong>{{ progress.prom_b2 if progress else '—' }}</strong><span>Notas y docente de cada área</span></a>
+  <a class="mod" href="/mi-asistencia"><span class="k">Mi asistencia</span><strong>{{ progress.asistencia_bars[0].value if progress and progress.asistencia_bars else 0 }}</strong><span>Días presente registrados</span></a>
+  {% if pred %}
+  <a class="mod" href="/mi-ficha"><span class="k">Mi atención</span><strong>{{ pred.nivel_riesgo }}</strong><span>Prioridad {{ pred.prioridad }} · {{ '%.0f'|format(pred.probabilidad * 100) }}%</span></a>
+  {% endif %}
+</div>
+{% if progress %}
+<div class="two">
+  <div class="card">
+    <h3 style="margin:0 0 10px">Evolución de mis notas</h3>
+    <div data-bars='{{ progress.evo_bars | tojson }}'></div>
+    <p class="muted">Bimestre 1: {{ progress.prom_b1 }} · bimestre 2: {{ progress.prom_b2 }} · cambio {{ progress.delta }}</p>
+  </div>
+  <div class="card">
+    <h3 style="margin:0 0 10px">Docentes de mi salón</h3>
+    <p><b>Tutor de aula:</b> {{ tutor }}</p>
+    <table>
+      {% for d in docentes_aula %}
+        <tr><td>{{ d.curso }}</td><td>{{ d.docente }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

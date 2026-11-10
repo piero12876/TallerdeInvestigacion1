@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Alerta temprana · Exellenti{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h1>Alerta temprana</h1>
+    <p class="sub">Probabilidad del modelo y nivel de <b>atención institucional</b> por salón. {{ preds|length }} caso(s) con el filtro actual.</p>
+  </div>
+  <a class="btn sec" href="/riesgo/exportar?nivel={{ nivel }}&grado={{ grado }}&q={{ q }}&disc={{ 1 if disc else 0 }}">Exportar CSV</a>
+</div>
+<form class="row" method="get">
+  <div>
+    <label>Nivel de atención</label>
+    <select name="nivel" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      {% for v in ['alto','medio','bajo'] %}
+        <option value="{{ v }}" {% if nivel == v %}selected{% endif %}>{{ v }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Salón</label>
+    <select name="grado" onchange="this.form.submit()">
+      <option value="0">Todos</option>
+      {% for g in grades %}
+        <option value="{{ g.id }}" {% if grado == g.id %}selected{% endif %}>{{ g.nombre }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Discrepancia</label>
+    <select name="disc" onchange="this.form.submit()">
+      <option value="0">Todas</option>
+      <option value="1" {% if disc %}selected{% endif %}>Modelo ≠ atención</option>
+    </select>
+  </div>
+  <div>
+    <label>Buscar</label>
+    <input name="q" value="{{ q }}" maxlength="80" placeholder="Nombre o código">
+  </div>
+  <button class="btn sec" type="submit">Filtrar</button>
+</form>
+<div class="grid">
+  {% set n_alto = preds | selectattr('nivel_riesgo', 'equalto', 'alto') | list | length %}
+  {% set n_medio = preds | selectattr('nivel_riesgo', 'equalto', 'medio') | list | length %}
+  {% set n_bajo = preds | selectattr('nivel_riesgo', 'equalto', 'bajo') | list | length %}
+  <div class="card stat"><div class="k">Listados</div><div class="v">{{ preds|length }}</div></div>
+  <div class="card stat"><div class="k">Atención alta</div><div class="v" style="color:#b42318">{{ n_alto }}</div></div>
+  <div class="card stat"><div class="k">Atención media</div><div class="v" style="color:#b58112">{{ n_medio }}</div></div>
+  <div class="card stat"><div class="k">Atención baja</div><div class="v" style="color:#1f7a4d">{{ n_bajo }}</div></div>
+</div>
+<div class="card" style="margin-bottom:16px">
+  <div data-bars='{{ [{"label":"Alto","value":n_alto,"color":"#b42318"},{"label":"Medio","value":n_medio,"color":"#b58112"},{"label":"Bajo","value":n_bajo,"color":"#1f7a4d"}] | tojson }}'></div>
+</div>
+<div class="card table-wrap">
+<input data-row-filter="#tabla-alerta" placeholder="Filtrar en la tabla" style="margin-bottom:10px;width:100%;max-width:320px">
+<table id="tabla-alerta">
+  <thead>
+    <tr><th>Prioridad</th><th>Estudiante</th><th>Salón</th><th>Probabilidad</th><th>Modelo</th><th>Atención</th><th></th></tr>
+  </thead>
+  <tbody>
+  {% for p in preds %}
+    <tr>
+      <td>{{ p.prioridad }}</td>
+      <td>{{ p.student.full_name }}</td>
+      <td>{{ p.student.grade.nombre if p.student.grade else '-' }}</td>
+      <td>
+        <div class="bar"><span style="width:{{ (p.probabilidad * 100)|round }}%;background:{% if p.nivel_riesgo=='alto' %}#b42318{% elif p.nivel_riesgo=='medio' %}#b58112{% else %}#1f7a4d{% endif %}"></span></div>
+        {{ '%.1f'|format(p.probabilidad * 100) }}%
+      </td>
+      <td><span class="badge b-{{ p.nivel_modelo or 'bajo' }}">{{ p.nivel_modelo or '—' }}</span></td>
+      <td><span class="badge b-{{ p.nivel_riesgo }}">{{ p.nivel_riesgo }}</span></td>
+      <td><a href="/estudiantes/{{ p.student.id }}">Ficha</a></td>
+    </tr>
+  {% else %}
+    <tr><td colspan="7" class="muted">No hay casos con ese filtro.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

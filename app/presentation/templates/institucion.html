@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}La institución · Exellenti{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h1>Mapa de la institución</h1>
+    <p class="sub">{{ institucion }} · Primaria {{ anio }} · {{ distrito }}, {{ provincia }}</p>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card stat"><div class="k">Matriculados activos</div><div class="v">{{ snap.matriculados }}</div></div>
+  <div class="card stat"><div class="k">Salones</div><div class="v">{{ snap.salones }}</div></div>
+  <div class="card stat"><div class="k">Grados</div><div class="v">{{ snap.grados }}</div></div>
+  <div class="card stat"><div class="k">Docentes</div><div class="v">{{ snap.docentes }}</div></div>
+</div>
+<div class="grid">
+  <div class="card stat"><div class="k">Áreas CNEB</div><div class="v">{{ snap.areas }}</div></div>
+  <div class="card stat"><div class="k">Usuarios activos</div><div class="v">{{ snap.usuarios }}</div></div>
+  <div class="card stat"><div class="k">Seguimientos</div><div class="v">{{ snap.seguimientos }}</div></div>
+  <div class="card stat"><div class="k">Secciones</div><div class="v">{{ snap.secciones|join(', ') }}</div></div>
+</div>
+
+<div class="grid">
+  <div class="card stat"><div class="k">Promedio IE</div><div class="v">{{ snap.promedio_ie }}</div></div>
+  <div class="card stat"><div class="k">Asistencia</div><div class="v">{{ snap.asistencia_pct }}%</div></div>
+  <div class="card stat"><div class="k">Tutores</div><div class="v">{{ snap.tutores }}</div></div>
+  <div class="card stat"><div class="k">Salones sin tutor</div><div class="v">{{ snap.sin_tutor }}</div></div>
+</div>
+
+<div class="two">
+  <div class="card">
+    <h3 style="margin:0 0 10px">Matrícula por grado</h3>
+    <div data-bars='{{ snap.por_grado | tojson }}'></div>
+  </div>
+  <div class="card">
+    <h3 style="margin:0 0 10px">Riesgo institucional</h3>
+    <div data-bars='{{ snap.riesgo_global | tojson }}'></div>
+  </div>
+</div>
+<div class="two" style="margin-top:16px">
+  <div class="card">
+    <h3 style="margin:0 0 10px">Matrícula por sección A / B / C</h3>
+    <div data-bars='{{ snap.por_seccion | tojson }}'></div>
+  </div>
+  <div class="card">
+    <h3 style="margin:0 0 10px">Usuarios por rol</h3>
+    <div data-bars='{{ snap.por_rol_bars | tojson }}'></div>
+  </div>
+</div>
+
+<div class="two" style="margin-top:16px">
+  <div class="card">
+    <h3 style="margin:0 0 10px">Cadena de la IE</h3>
+    <p>Directora: ve y gestiona toda la IE (matrícula, evaluación, asistencia, alerta, personal y usuarios).</p>
+    <p>→ 1.° y 2.°: un docente de aula dicta todas las áreas y es el tutor.</p>
+    <p>→ Desde 3.°: el tutor solo es encargado del salón; cada área la dicta un especialista (puede cubrir varios grados).</p>
+    <p>→ El alumno ve su tutor, quién le enseña cada curso, sus notas y su nivel de atención.</p>
+  </div>
+  <div class="card">
+    <h3 style="margin:0 0 10px">Usuarios por rol</h3>
+    <table>
+      {% for rol, n in snap.por_rol.items() %}
+        <tr><td>{{ snap.role_labels.get(rol, rol) }}</td><td>{{ n }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <h3 style="margin:0 0 10px">Salones (grado + sección)</h3>
+  <input data-row-filter="#tabla-aulas" placeholder="Filtrar salón o tutor" style="margin-bottom:10px;width:100%;max-width:320px">
+  <table id="tabla-aulas">
+    <thead>
+      <tr><th>Salón</th><th>Tutor de aula</th><th>Matriculados</th><th>Alto</th><th>Medio</th><th>Bajo</th></tr>
+    </thead>
+    <tbody>
+    {% for a in snap.aulas %}
+      <tr>
+        <td>{{ a.nombre }}</td>
+        <td>{{ a.tutor }}</td>
+        <td>{{ a.matriculados }}</td>
+        <td>{{ a.alto }}</td>
+        <td>{{ a.medio }}</td>
+        <td>{{ a.bajo }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <h3 style="margin:0 0 10px">Cargas: docente → salón → curso</h3>
+  <input data-row-filter="#tabla-cargas" placeholder="Filtrar docente, salón o curso" style="margin-bottom:10px;width:100%;max-width:320px">
+  <table id="tabla-cargas">
+    <thead><tr><th>Docente</th><th>Salón</th><th>Curso</th><th>Rol en el aula</th></tr></thead>
+    <tbody>
+    {% for c in cargas %}
+      {% if c.teacher and c.teacher.user and c.grade and c.course %}
+      <tr>
+        <td>{{ c.teacher.user.full_name }}</td>
+        <td>{{ c.grade.nombre }}</td>
+        <td>{{ c.course.nombre }}</td>
+        <td>Docente de área</td>
+      </tr>
+      {% endif %}
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

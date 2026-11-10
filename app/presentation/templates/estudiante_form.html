@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}{% if student %}Editar{% else %}Nueva matrícula{% endif %} · Exellenti{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h1>{% if student %}Editar ficha{% else %}Nueva matrícula{% endif %}</h1>
+    <p class="sub">Ficha tipo SIAGIE: identidad, salón, domicilio, apoderado y contexto. Nombres sin números. DNI de 8 dígitos. Celular de 9 dígitos que empieza con 9.</p>
+  </div>
+</div>
+{% if error %}<div class="err" role="alert">{{ error }}</div>{% endif %}
+<form method="post" class="card" style="max-width:880px">
+  {% include "_csrf.html" %}
+
+  <div class="sec-title">1. Estudiante</div>
+  <div class="form-grid">
+    <div>
+      <label>Nombres</label>
+      <input name="nombres" required minlength="2" maxlength="80" data-letters pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .\-]{2,80}" title="Solo letras, espacios y tildes." autocomplete="given-name" spellcheck="false" value="{{ form.nombres if form else '' }}">
+    </div>
+    <div>
+      <label>Apellidos</label>
+      <input name="apellidos" required minlength="2" maxlength="80" data-letters pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .\-]{2,80}" title="Solo letras, espacios y tildes." autocomplete="family-name" spellcheck="false" value="{{ form.apellidos if form else '' }}">
+    </div>
+    <div>
+      <label>DNI (8 dígitos, opcional)</label>
+      <input name="dni" inputmode="numeric" maxlength="8" data-digits pattern="[0-9]{8}" title="Solo números. 8 dígitos, o vacío." spellcheck="false" value="{{ form.dni if form else '' }}">
+    </div>
+    <div>
+      <label>Sexo</label>
+      <select name="sexo" required>
+        <option value="M" {% if not form or form.sexo == 'M' %}selected{% endif %}>Masculino</option>
+        <option value="F" {% if form and form.sexo == 'F' %}selected{% endif %}>Femenino</option>
+      </select>
+    </div>
+    <div>
+      <label>Fecha de nacimiento</label>
+      <input type="date" name="fecha_nacimiento" min="{{ anio - 14 }}-01-01" max="{{ anio - 5 }}-12-31" title="Edad de primaria ({{ anio - 14 }}–{{ anio - 5 }})." value="{{ form.fecha_nacimiento if form else '' }}">
+    </div>
+    <div>
+      <label>Lengua materna</label>
+      <select name="lengua_materna">
+        {% for k, lab in lengua_labels.items() %}
+          <option value="{{ k }}" {% if form and form.lengua_materna == k %}selected{% endif %}>{{ lab }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="sec-title">2. Matrícula</div>
+  <div class="form-grid">
+    <div>
+      <label>Salón</label>
+      <select name="grade_id" required>
+        {% for g in grades %}
+          <option value="{{ g.id }}" {% if form and form.grade_id == g.id %}selected{% endif %}>{{ g.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>Tipo de matrícula</label>
+      <select name="tipo_matricula">
+        {% for k, lab in tipo_mat_labels.items() %}
+          <option value="{{ k }}" {% if form and form.tipo_matricula == k %}selected{% endif %}>{{ lab }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>Turno</label>
+      <select name="turno">
+        {% for k, lab in turno_labels.items() %}
+          <option value="{{ k }}" {% if form and form.turno == k %}selected{% endif %}>{{ lab }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>Fecha de matrícula</label>
+      <input type="date" name="fecha_matricula" min="{{ anio }}-01-15" max="{{ anio }}-12-20" title="Fecha dentro del año lectivo {{ anio }}." value="{{ form.fecha_matricula if form else '' }}">
+    </div>
+    <div class="full">
+      <label>IE de procedencia (si es traslado)</label>
+      <input name="ie_procedencia" maxlength="160" title="Letras, números y # ° . , -" value="{{ form.ie_procedencia if form else '' }}">
+    </div>
+  </div>
+
+  <div class="sec-title">3. Domicilio</div>
+  <div class="form-grid">
+    <div class="full">
+      <label>Dirección</label>
+      <input name="direccion" maxlength="160" placeholder="Jr. Real 245" title="Letras, números y # ° . , -" value="{{ form.direccion if form else '' }}">
+    </div>
+    <div>
+      <label>Distrito</label>
+      <input name="distrito" maxlength="80" data-letters value="{{ form.distrito if form else distrito }}">
+    </div>
+    <div>
+      <label>Referencia</label>
+      <input name="referencia" maxlength="160" value="{{ form.referencia if form else '' }}">
+    </div>
+  </div>
+
+  <div class="sec-title">4. Apoderado</div>
+  <div class="form-grid">
+    <div>
+      <label>Nombre del apoderado</label>
+      <input name="apoderado" maxlength="80" data-letters pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .\-]{2,80}" title="Solo letras, o vacío." value="{{ form.apoderado if form else '' }}">
+    </div>
+    <div>
+      <label>Parentesco</label>
+      <select name="parentesco">
+        <option value="">Seleccionar</option>
+        {% for k, lab in parentesco_labels.items() %}
+          <option value="{{ k }}" {% if form and form.parentesco == k %}selected{% endif %}>{{ lab }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>DNI del apoderado</label>
+      <input name="dni_apoderado" inputmode="numeric" maxlength="8" data-digits pattern="[0-9]{8}" title="8 dígitos, o vacío." value="{{ form.dni_apoderado if form else '' }}">
+    </div>
+    <div>
+      <label>Celular (9 dígitos)</label>
+      <input name="telefono_apoderado" inputmode="numeric" maxlength="9" data-digits pattern="9[0-9]{8}" title="9 dígitos que empiezan con 9, o vacío." value="{{ form.telefono_apoderado if form else '' }}">
+    </div>
+    <div class="full">
+      <label>Correo del apoderado</label>
+      <input name="correo_apoderado" type="email" maxlength="120" title="Correo válido, o vacío." value="{{ form.correo_apoderado if form else '' }}">
+    </div>
+  </div>
+
+  <div class="sec-title">5. Contexto (tutoría)</div>
+  <div class="form-grid">
+    <div>
+      <label>Vive con</label>
+      <select name="vive_con">
+        <option value="">Seleccionar</option>
+        {% for k, lab in vive_labels.items() %}
+          <option value="{{ k }}" {% if form and form.vive_con == k %}selected{% endif %}>{{ lab }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>Seguro de salud</label>
+      <select name="seguro">
+        <option value="">Seleccionar</option>
+        {% for k, lab in seguro_labels.items() %}
+          <option value="{{ k }}" {% if form and form.seguro == k %}selected{% endif %}>{{ lab }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>Discapacidad</label>
+      <select name="discapacidad">
+        {% for k, lab in discap_labels.items() %}
+          <option value="{{ k }}" {% if form and form.discapacidad == k %}selected{% endif %}>{{ lab }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="check-lab"><input type="checkbox" name="nnee" value="1" {% if form and form.nnee %}checked{% endif %}> Necesidad educativa especial (NEE)</label>
+    </div>
+    <div class="full">
+      <label>Observaciones de matrícula</label>
+      <textarea name="observaciones" rows="3" maxlength="500" title="Máximo 500 caracteres.">{{ form.observaciones if form else '' }}</textarea>
+    </div>
+  </div>
+
+  <p style="margin-top:16px">
+    <button class="btn" type="submit">Guardar ficha</button>
+    <a class="btn sec" href="{% if student %}/estudiantes/{{ student.id }}{% else %}/estudiantes{% endif %}">Cancelar</a>
+  </p>
+</form>
+{% endblock %}

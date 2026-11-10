@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Usuarios · Exellenti{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h1>Usuarios institucionales</h1>
+    <p class="sub">Dirección crea cuentas y entrega la clave por un canal seguro. Las contraseñas no se almacenan ni se muestran en claro.</p>
+  </div>
+</div>
+{% if error %}<div class="err" role="alert">{{ error }}</div>{% endif %}
+<form class="row" method="get">
+  <div>
+    <label>Rol</label>
+    <select name="rol" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      {% for r, lab in role_labels.items() %}
+        <option value="{{ r }}" {% if rol == r %}selected{% endif %}>{{ lab }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Estado</label>
+    <select name="estado" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      <option value="activo" {% if estado == 'activo' %}selected{% endif %}>Activos</option>
+      <option value="inactivo" {% if estado == 'inactivo' %}selected{% endif %}>Inactivos</option>
+    </select>
+  </div>
+  <div>
+    <label>Buscar</label>
+    <input name="q" value="{{ q }}" maxlength="80" placeholder="Usuario o nombre" autocomplete="off">
+  </div>
+  <button class="btn sec" type="submit">Filtrar</button>
+</form>
+<div class="two">
+  <div class="card table-wrap">
+    <h3 style="margin:0 0 10px">Cuentas</h3>
+    <table>
+      <thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+      {% for u in users %}
+        <tr>
+          <td><code>{{ u.username }}</code></td>
+          <td>{{ u.full_name }}</td>
+          <td>{{ role_labels.get(u.role, u.role) }}</td>
+          <td><span class="badge {% if u.is_active %}b-activo{% else %}b-retirado{% endif %}">{% if u.is_active %}activo{% else %}inactivo{% endif %}</span></td>
+          <td>
+            {% if u.id != user.id %}
+            <form method="post" action="/usuarios/{{ u.id }}/estado" style="display:inline">
+              {% include "_csrf.html" %}
+              <button class="btn sec" type="submit" data-confirm="¿Cambiar el estado de {{ u.username }}?">{% if u.is_active %}Desactivar{% else %}Activar{% endif %}</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card">
+    <h3 style="margin:0 0 10px">Nueva cuenta</h3>
+    <form method="post" action="/usuarios" class="stack">
+      {% include "_csrf.html" %}
+      <div>
+        <label>Usuario (letras, números, punto o guion)</label>
+        <input name="username" required minlength="3" maxlength="80" data-username pattern="[a-z0-9][a-z0-9._-]{2,79}" title="Mínimo 3. Solo letras minúsculas, números, punto o guion." spellcheck="false" autocomplete="off" style="width:100%" value="{{ form.username if form else '' }}">
+      </div>
+      <div>
+        <label>Nombre completo</label>
+        <input name="full_name" required minlength="2" maxlength="80" data-letters pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .\-]{2,80}" title="Solo letras, espacios y tildes. Sin números." style="width:100%" value="{{ form.full_name if form else '' }}">
+      </div>
+      <div>
+        <label>Rol</label>
+        <select name="role" required>
+          <option value="docente" {% if not form or form.role == 'docente' %}selected{% endif %}>Docente</option>
+          <option value="estudiante" {% if form and form.role == 'estudiante' %}selected{% endif %}>Estudiante</option>
+        </select>
+      </div>
+      <div>
+        <label>Clave temporal (mín. 8, letras y números)</label>
+        <input name="password" type="password" required minlength="8" maxlength="80" pattern="(?=.*[A-Za-zÁÉÍÓÚáéíóúñÑ])(?=.*[0-9]).{8,80}" title="Mínimo 8 caracteres, con letras y números." style="width:100%" autocomplete="new-password">
+      </div>
+      <button class="btn" type="submit">Crear usuario</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

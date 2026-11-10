@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Mi boleta · Exellenti{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h1>Mi boleta</h1>
+    <p class="sub">{{ student.full_name }} · {{ student.codigo }} · {{ student.grade.nombre if student.grade else '' }} · Tutor: {{ tutor }}{% if pred %} · Atención {{ pred.nivel_riesgo }}{% endif %}</p>
+  </div>
+</div>
+{% if progress %}
+<div class="two" style="margin-bottom:16px">
+  <div class="card">
+    <h3 style="margin:0 0 10px">Evolución (bimestre 1 y 2)</h3>
+    <div data-bars='{{ progress.evo_bars | tojson }}'></div>
+    <p class="muted">Promedio bim. 1: {{ progress.prom_b1 }} · bim. 2: {{ progress.prom_b2 }} · cambio {{ progress.delta }}</p>
+  </div>
+  <div class="card">
+    <h3 style="margin:0 0 10px">Promedio por área</h3>
+    <div data-bars='{{ progress.notas_bars | tojson }}'></div>
+    <p><span class="good">Va bien:</span> {{ progress.bien|join(', ') or '—' }}</p>
+    <p>En proceso: {{ progress.proceso|join(', ') or '—' }}</p>
+    <p><span class="bad">Necesita refuerzo:</span> {{ progress.mal|join(', ') or '—' }}</p>
+  </div>
+</div>
+{% endif %}
+<div class="card table-wrap">
+  <input data-row-filter="#tabla-boleta" placeholder="Filtrar área" style="margin-bottom:10px;width:100%;max-width:320px">
+  <table id="tabla-boleta">
+    <thead><tr><th>Área</th><th>Docente</th><th>Bimestre 1</th><th></th><th>Bimestre 2</th><th></th><th>Promedio</th><th>Logro</th></tr></thead>
+    <tbody>
+    {% for c in courses %}
+      {% set n1 = records.get((c.id, 1)) %}
+      {% set n2 = records.get((c.id, 2)) %}
+      <tr>
+        <td>{{ c.nombre }}</td>
+        <td>{{ docentes.get(c.id, '—') }}</td>
+        <td>{{ n1 if n1 is not none else '—' }}</td>
+        <td>{% if n1 is not none %}{{ achievement(n1) }}{% endif %}</td>
+        <td>{{ n2 if n2 is not none else '—' }}</td>
+        <td>{% if n2 is not none %}{{ achievement(n2) }}{% endif %}</td>
+        <td>
+          {% if n1 is not none and n2 is not none %}{{ '%.1f'|format((n1 + n2) / 2) }}
+          {% elif n1 is not none %}{{ n1 }}
+          {% elif n2 is not none %}{{ n2 }}
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          {% if n1 is not none and n2 is not none %}{{ achievement((n1 + n2) / 2) }}
+          {% elif n1 is not none %}{{ achievement(n1) }}
+          {% elif n2 is not none %}{{ achievement(n2) }}
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p class="muted">AD 17–20 · A 14–16 · B 11–13 · C 0–10</p>
+</div>
+{% endblock %}

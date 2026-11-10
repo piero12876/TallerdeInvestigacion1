@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Bitácora · Exellenti{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h1>Bitácora</h1>
+    <p class="sub">Últimas 150 acciones del sistema. Solo Dirección. No incluye claves ni DNI.</p>
+  </div>
+</div>
+<form class="row" method="get">
+  <div>
+    <label>Acción</label>
+    <select name="accion" onchange="this.form.submit()">
+      <option value="">Todas</option>
+      {% for a in acciones %}
+        <option value="{{ a }}" {% if accion == a %}selected{% endif %}>{{ a }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Detalle</label>
+    <input name="q" value="{{ q }}" maxlength="80" placeholder="Buscar en el detalle">
+  </div>
+  <button class="btn sec" type="submit">Filtrar</button>
+</form>
+<div class="card table-wrap">
+  <input data-row-filter="#tabla-bitacora" placeholder="Filtrar en la tabla" style="margin-bottom:10px;width:100%;max-width:320px">
+  <table id="tabla-bitacora">
+    <thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr></thead>
+    <tbody>
+    {% for log in logs %}
+      <tr>
+        <td>{{ log.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>{{ names.get(log.user_id, '—') }}</td>
+        <td>{{ log.accion }}</td>
+        <td>{{ log.detalle }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="4" class="muted">Sin registros.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

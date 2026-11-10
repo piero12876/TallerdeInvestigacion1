@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Docentes · Exellenti{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h1>Docentes y cargas</h1>
+    <p class="sub">1.° y 2.°: un docente de aula dicta todas las áreas. Desde 3.° el tutor no dicta; el especialista de área puede enseñar el mismo curso en varios salones.</p>
+  </div>
+</div>
+<form class="row" method="get">
+  <div>
+    <label>Buscar</label>
+    <input name="q" value="{{ q }}" maxlength="80" placeholder="Nombre, usuario o especialidad">
+  </div>
+  <div>
+    <label>Rol de aula</label>
+    <select name="tutor" onchange="this.form.submit()">
+      <option value="0">Todos</option>
+      <option value="1" {% if tutor %}selected{% endif %}>Solo tutores</option>
+    </select>
+  </div>
+  <button class="btn sec" type="submit">Filtrar</button>
+</form>
+<div class="grid">
+  <div class="card stat"><div class="k">Docentes</div><div class="v">{{ teachers|length }}</div></div>
+  <div class="card stat"><div class="k">Cargas (salón × curso)</div><div class="v">{{ cargas_n }}</div></div>
+  <div class="card stat"><div class="k">Tutores de aula</div><div class="v">{{ tutores_n }}</div></div>
+  <div class="card stat"><div class="k">Salones cubiertos</div><div class="v">{{ salones_n }}</div></div>
+</div>
+{% for t in teachers %}
+{% if t.user %}
+<div class="card" style="margin-bottom:12px">
+  <h3 style="margin:0 0 4px">{{ t.user.full_name }}</h3>
+  <p class="muted">{{ t.especialidad }} · usuario {{ t.user.username }}{% if t.tutored_grades %} · tutor de {% for g in t.tutored_grades %}{{ g.nombre }}{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}</p>
+  {% if t.assignments %}
+  <table>
+    <thead><tr><th>Salón</th><th>Área que dicta</th></tr></thead>
+    <tbody>
+    {% for a in t.assignments %}
+      {% if a.grade and a.course %}
+      <tr>
+        <td>{{ a.grade.nombre }}</td>
+        <td>{{ a.course.nombre }}</td>
+      </tr>
+      {% endif %}
+    {% endfor %}
+    </tbody>
+  </table>
+  {% elif t.tutored_grades %}
+  <p>Solo tutoría: no dicta áreas en este salón.</p>
+  {% endif %}
+</div>
+{% endif %}
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Evaluación · Exellenti{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h1>Evaluación</h1>
+    <p class="sub">Registro vigesimal por área y bimestre, y evolución temporal del salón (bimestre 1 frente a bimestre 2).{% if students %} · {{ missing }} ficha(s) con nota vacía.{% endif %}</p>
+  </div>
+</div>
+<form class="row" method="get">
+  <div>
+    <label>Salón</label>
+    <select name="grado" onchange="this.form.submit()">
+      <option value="0">Seleccionar</option>
+      {% for g in grades %}
+        <option value="{{ g.id }}" {% if grado == g.id %}selected{% endif %}>{{ g.nombre }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Área</label>
+    <select name="curso" onchange="this.form.submit()">
+      <option value="0">Seleccionar</option>
+      {% for c in courses %}
+        <option value="{{ c.id }}" {% if curso == c.id %}selected{% endif %}>{{ c.nombre }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Buscar</label>
+    <input name="q" value="{{ q }}" maxlength="80" placeholder="Estudiante o código">
+  </div>
+  <button class="btn sec" type="submit">Filtrar</button>
+</form>
+
+{% if not grado or not curso %}
+  <div class="card"><p class="muted">Seleccione salón y área. Este módulo no muestra asistencia ni riesgo.</p></div>
+{% elif students %}
+{% if evo %}
+<div class="two" style="margin-bottom:16px">
+  <div class="card">
+    <h3 style="margin:0 0 10px">Evolución del salón</h3>
+    <div data-bars='{{ evo.bars | tojson }}'></div>
+  </div>
+  <div class="card">
+    <h3 style="margin:0 0 10px">Lectura</h3>
+    <p>Promedio bim. 1: <b>{{ evo.prom_b1 }}</b> · bim. 2: <b>{{ evo.prom_b2 }}</b> · cambio {{ evo.delta }}</p>
+    <p class="muted">{{ evo.suben }} estudiantes suben ≥ 1 punto · {{ evo.bajan }} bajan ≥ 1 punto.</p>
+  </div>
+</div>
+{% endif %}
+<form method="post">
+  {% include "_csrf.html" %}
+  <input type="hidden" name="grado" value="{{ grado }}">
+  <input type="hidden" name="curso" value="{{ curso }}">
+  <div class="card table-wrap">
+    <input data-row-filter="#tabla-notas" placeholder="Filtrar estudiante en esta lista" style="margin-bottom:10px;width:100%;max-width:320px">
+    <table id="tabla-notas">
+      <thead><tr><th>Estudiante</th><th>Bimestre 1</th><th>Bimestre 2</th><th>Cambio</th></tr></thead>
+      <tbody>
+      {% for s in students %}
+        {% set n1 = table.get((s.id, 1)) %}
+        {% set n2 = table.get((s.id, 2)) %}
+        <tr {% if n1 is none or n2 is none %}class="row-warn"{% elif (n2 - n1) <= -1 %}class="row-warn"{% endif %}>
+          <td>{{ s.full_name }}</td>
+          <td><input name="n_{{ s.id }}_1" type="number" min="0" max="20" step="0.1" inputmode="decimal" data-grade title="Solo números de 0 a 20." value="{{ n1 if n1 is not none else '' }}" {% if not can_edit %}disabled{% endif %}></td>
+          <td><input name="n_{{ s.id }}_2" type="number" min="0" max="20" step="0.1" inputmode="decimal" data-grade title="Solo números de 0 a 20." value="{{ n2 if n2 is not none else '' }}" {% if not can_edit %}disabled{% endif %}></td>
+          <td>{% if n1 is not none and n2 is not none %}{{ '%.1f'|format(n2 - n1) }}{% else %}—{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if can_edit %}<p><button class="btn" type="submit">Guardar notas</button></p>{% endif %}
+</form>
+{% else %}
+  <p class="muted">No hay estudiantes en ese salón.</p>
+{% endif %}
+{% endblock %}

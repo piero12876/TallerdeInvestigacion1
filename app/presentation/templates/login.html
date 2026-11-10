@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ingreso · IE Exellenti</title>
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+  <div class="login-wrap">
+    <form class="login" method="post" action="/login" autocomplete="on">
+      {% include "_csrf.html" %}
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+      <div class="brand" style="color:#5c6b75">Sistema de la Institución Educativa</div>
+      <h1>Exellenti · El Tambo</h1>
+      <p class="sub">Primaria {{ anio if anio is defined else 2026 }} · Huancayo. Ingrese con el usuario entregado por Dirección.</p>
+      {% if error %}<div class="err" role="alert">{{ error }}</div>{% endif %}
+      <div class="stack">
+        <div>
+          <label>Usuario</label>
+          <input name="username" required autofocus minlength="3" maxlength="80" data-username title="Usuario de 3 a 80 caracteres (letras, números, punto o guion)." style="width:100%" autocomplete="username" spellcheck="false" value="{{ username or '' }}">
+        </div>
+        <div>
+          <label>Contraseña</label>
+          <input name="password" type="password" required maxlength="80" title="Ingrese la clave entregada por Dirección." style="width:100%" autocomplete="current-password">
+        </div>
+        <button class="btn" type="submit">Ingresar</button>
+      </div>
+      <p class="muted" style="margin-top:14px;font-size:12px">Si no tiene usuario, solicítelo a la dirección de la IE. Las credenciales del entorno de tesis están en el README del proyecto, no en esta pantalla.</p>
+    </form>
+  </div>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
