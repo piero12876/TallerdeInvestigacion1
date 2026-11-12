@@ -24,8 +24,9 @@ class Base(DeclarativeBase):
     pass
 
 
-connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
-engine = create_engine(DATABASE_URL, connect_args=connect_args)
+_IS_SQLITE = DATABASE_URL.startswith("sqlite")
+connect_args = {"check_same_thread": False} if _IS_SQLITE else {}
+engine = create_engine(DATABASE_URL, connect_args=connect_args, pool_pre_ping=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=True, autocommit=False)
 
 
@@ -197,9 +198,27 @@ class AttendanceRecord(Base):
     student_id: Mapped[int] = mapped_column(ForeignKey("students.id"), index=True)
     fecha: Mapped[date] = mapped_column(Date)
     estado: Mapped[str] = mapped_column(String(20))
+    detalle: Mapped[str] = mapped_column(String(160), default="")
     registrado_por: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
 
     student: Mapped[Student] = relationship(back_populates="attendance")
+
+
+class TutoringAppointment(Base):
+    __tablename__ = "tutoring_appointments"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    student_id: Mapped[int] = mapped_column(ForeignKey("students.id"), index=True)
+    author_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    fecha: Mapped[date] = mapped_column(Date, index=True)
+    motivo: Mapped[str] = mapped_column(String(180))
+    canal: Mapped[str] = mapped_column(String(20), default="presencial")
+    estado: Mapped[str] = mapped_column(String(20), default="programada", index=True)
+    resultado: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    student: Mapped[Student] = relationship()
+    author: Mapped[User] = relationship()
 
 
 class FollowUp(Base):
@@ -209,6 +228,8 @@ class FollowUp(Base):
     student_id: Mapped[int] = mapped_column(ForeignKey("students.id"), index=True)
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     contenido: Mapped[str] = mapped_column(Text)
+    tipo: Mapped[str] = mapped_column(String(20), default="academico", index=True)
+    estado: Mapped[str] = mapped_column(String(20), default="abierto", index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     student: Mapped[Student] = relationship(back_populates="followups")
@@ -265,6 +286,8 @@ class BacklogItem(Base):
     sprint: Mapped[str] = mapped_column(String(40))
     estado: Mapped[str] = mapped_column(String(30), default="Hecho")
     criterio: Mapped[str] = mapped_column(Text, default="")
+    actor: Mapped[str] = mapped_column(String(40), default="")
+    historia: Mapped[str] = mapped_column(Text, default="")
 
 
 class AuditLog(Base):
@@ -280,7 +303,9 @@ class AuditLog(Base):
 def reset_if_stale() -> None:
     from backend.config import DATA_DIR, MODEL_PATH, TESTING
 
-    if TESTING or ":memory:" in DATABASE_URL:
+    # En PostgreSQL el esquema vive en Railway. Borrar un archivo local no
+    # debe tocar esa base ni el modelo en cada reinicio del contenedor.
+    if TESTING or ":memory:" in DATABASE_URL or not _IS_SQLITE:
         return
     marker = DATA_DIR / "schema.txt"
     db_path = DATA_DIR / "exellenti.db"

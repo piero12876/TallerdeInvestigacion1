@@ -42,6 +42,7 @@ def nav_for(user) -> list[dict]:
         aula.extend([
             {"href": "/riesgo", "label": "Alerta temprana"},
             {"href": "/seguimientos", "label": "Seguimientos"},
+            {"href": "/citas", "label": "Agenda de atención"},
             {"href": "/reportes", "label": "Reportes"},
         ])
         return [
@@ -56,6 +57,7 @@ def nav_for(user) -> list[dict]:
             {"href": "/asistencia", "label": "Asistencia"},
             {"href": "/riesgo", "label": "Alerta temprana"},
             {"href": "/seguimientos", "label": "Seguimientos"},
+            {"href": "/citas", "label": "Agenda de atención"},
             {"href": "/reportes", "label": "Reportes"},
         ]},
         {"group": "Institución", "links": [

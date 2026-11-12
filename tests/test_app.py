@@ -411,8 +411,11 @@ def test_director_pages_do_not_500(client):
         "/reportes?tipo=rendimiento",
         "/reportes?tipo=asistencia",
         "/reportes?tipo=padron",
+        "/reportes?tipo=correlacion",
         "/reportes?tipo=basura",
         "/seguimientos",
+        "/citas",
+        "/citas?estado=programada",
         "/modelo",
         "/usuarios",
         "/usuarios?rol=docente",
@@ -808,3 +811,103 @@ def test_malformed_ids_do_not_500(client):
     r2 = client.get("/calificaciones?grado=99999&curso=99999")
     assert r2.status_code == 200
     assert "Seleccione salón" in r2.text or "No hay estudiantes" in r2.text or "Evaluación" in r2.text
+
+
+def test_citas_filters_and_validation(client):
+    login(client, "directora", "Dir#Ex26")
+    db = SessionLocal()
+    own = db.query(Student).filter_by(es_historico=False, estado="activo").order_by(Student.id).first()
+    foreign = (
+        db.query(Student)
+        .join(SchoolGrade)
+        .filter(Student.es_historico.is_(False), SchoolGrade.nivel == 6)
+        .first()
+    )
+    own_id = own.id
+    foreign_id = foreign.id
+    db.close()
+    page = client.get("/citas")
+    assert page.status_code == 200
+    assert "Agenda de atención" in page.text
+    filtered = client.get("/citas?estado=programada")
+    assert "Programar cita" in filtered.text
+    weekend = client.post(
+        "/citas",
+        data={
+            "csrf": csrf_token(page.text),
+            "student_id": str(own_id),
+            "fecha": f"{ANIO_LECTIVO}-11-14",
+            "motivo": "Cita en sábado que no debe guardarse.",
+        },
+        follow_redirects=True,
+    )
+    assert "lunes a viernes" in weekend.text
+    ok = client.post(
+        "/citas",
+        data={
+            "csrf": csrf_token(client.get("/citas").text),
+            "student_id": str(own_id),
+            "fecha": f"{ANIO_LECTIVO}-11-13",
+            "motivo": "Reunión con el apoderado por inasistencias.",
+        },
+        follow_redirects=True,
+    )
+    assert "Cita de atención programada." in ok.text
+    login(client, "alumno31", "Est31#Ex26")
+    blocked = client.get("/citas", follow_redirects=True)
+    assert "Programar cita" not in blocked.text
+    login(client, "maria.cerron", "Doc1#Ex26")
+    denied = client.post(
+        "/citas",
+        data={
+            "csrf": csrf_token(client.get("/citas").text),
+            "student_id": str(foreign_id),
+            "fecha": f"{ANIO_LECTIVO}-11-13",
+            "motivo": "Intento de citar a otro salón.",
+        },
+        follow_redirects=True,
+    )
+    assert "Cita de atención programada." not in denied.text
+
+
+def test_correlacion_y_justificacion(client):
+    login(client, "directora", "Dir#Ex26")
+    page = client.get("/reportes?tipo=correlacion")
+    assert page.status_code == 200
+    assert "Correlación" in page.text
+    csv_resp = client.get("/reportes/exportar?tipo=correlacion")
+    assert csv_resp.status_code == 200
+    assert "brecha" in csv_resp.text
+    assert "seguimiento_abierto" in csv_resp.text
+    scrum = client.get("/scrum")
+    assert "HU-07" in scrum.text
+    assert "Como directora" in scrum.text
+    db = SessionLocal()
+    grade = db.query(SchoolGrade).filter_by(nivel=1, seccion="A").first()
+    student = db.query(Student).filter_by(grade_id=grade.id, es_historico=False, estado="activo").first()
+    gid, sid = grade.id, student.id
+    db.close()
+    day = date.today()
+    chosen = None
+    for _ in range(21):
+        if attendance_date(day, year=ANIO_LECTIVO) is None:
+            chosen = day
+            break
+        day -= timedelta(days=1)
+    lista = client.get(f"/asistencia?grado={gid}&fecha={chosen.isoformat()}")
+    assert "Correlación con tutoría" in lista.text or "Patrones" in lista.text
+    saved = client.post(
+        "/asistencia",
+        data={
+            "csrf": csrf_token(lista.text),
+            "grado": str(gid),
+            "fecha": chosen.isoformat(),
+            f"a_{sid}": "justificada",
+            f"j_{sid}": "corto",
+        },
+        follow_redirects=True,
+    )
+    assert "omitieron" in saved.text.lower()
+    seg = client.get("/seguimientos?tipo=asistencia&estado=abierto")
+    assert seg.status_code == 200
+    assert "Seguimientos" in seg.text

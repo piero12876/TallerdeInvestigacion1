@@ -3,4 +3,11 @@ import uvicorn
 from backend.config import HOST, PORT
 
 if __name__ == "__main__":
-    uvicorn.run("backend.main:app", host=HOST, port=PORT, reload=False)
+    uvicorn.run(
+        "backend.main:app",
+        host=HOST,
+        port=PORT,
+        reload=False,
+        proxy_headers=True,
+        forwarded_allow_ips="*",
+    )

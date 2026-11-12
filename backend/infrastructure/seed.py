@@ -19,6 +19,7 @@ from backend.infrastructure.database import (
     Student,
     TeacherAssignment,
     TeacherProfile,
+    TutoringAppointment,
     User,
 )
 from backend.infrastructure.security import hash_password
@@ -296,6 +297,8 @@ def _seed(db: Session) -> None:
                 student_id=caso_alto.id,
                 author_id=autor_tutor.id,
                 contenido="Tutoría: inasistencias reiteradas y notas en C. Coordinar con apoderado y docente de aula.",
+                tipo="asistencia",
+                estado="abierto",
             )
         )
     if direccion and caso_medio:
@@ -304,6 +307,8 @@ def _seed(db: Session) -> None:
                 student_id=caso_medio.id,
                 author_id=direccion.id,
                 contenido="Seguimiento preventivo: rendimiento irregular. Refuerzo en Matemática y Comunicación.",
+                tipo="academico",
+                estado="abierto",
             )
         )
 
@@ -344,9 +349,145 @@ def _seed(db: Session) -> None:
                 estado="Hecho",
                 criterio="CSV de priorizados, alta/edición/baja de estudiantes y usuarios.",
             ),
+            BacklogItem(
+                codigo="PBI-06",
+                titulo="Agendar la atención de los casos priorizados",
+                sprint="Sprint 5",
+                estado="Hecho",
+                criterio="Citas de tutoría con motivo, estado y resultado, filtradas por salón.",
+            ),
+            BacklogItem(
+                codigo="HU-01",
+                titulo="Pasar lista del salón y justificar la inasistencia",
+                sprint="Sprint 1",
+                estado="Hecho",
+                actor="Docente tutor",
+                historia="Como docente tutor, quiero marcar presente, falta, tardanza o justificada con motivo, para que la asistencia del día quede auditada.",
+                criterio="La justificada sin motivo de 8 caracteres no se guarda. No se registra sábado, domingo ni fecha futura.",
+            ),
+            BacklogItem(
+                codigo="HU-02",
+                titulo="Ver el patrón de faltas del salón",
+                sprint="Sprint 1",
+                estado="Hecho",
+                actor="Docente tutor",
+                historia="Como docente tutor, quiero ver porcentaje, racha y faltas seguidas, para decidir a quién citar.",
+                criterio="Un patrón es racha de 3 faltas o asistencia menor a 85 % con al menos 10 marcas.",
+            ),
+            BacklogItem(
+                codigo="HU-03",
+                titulo="Registrar un seguimiento clasificado",
+                sprint="Sprint 3",
+                estado="Hecho",
+                actor="Docente",
+                historia="Como docente, quiero anotar una tutoría académica, de asistencia, familiar o de convivencia, para dejar constancia del caso.",
+                criterio="El texto tiene al menos 10 caracteres y el caso nace abierto.",
+            ),
+            BacklogItem(
+                codigo="HU-04",
+                titulo="Cerrar o reabrir un seguimiento",
+                sprint="Sprint 3",
+                estado="Hecho",
+                actor="Docente",
+                historia="Como docente, quiero cerrar el caso cuando la familia ya fue atendida, para no mezclarlo con los pendientes.",
+                criterio="Solo se cierra un seguimiento de un estudiante de la propia carga.",
+            ),
+            BacklogItem(
+                codigo="HU-05",
+                titulo="Programar la cita de atención",
+                sprint="Sprint 5",
+                estado="Hecho",
+                actor="Dirección",
+                historia="Como directora, quiero citar por salón, fecha y canal, para ordenar la tutoría de los priorizados.",
+                criterio="La cita es de lunes a viernes, dentro del año lectivo y de los próximos 21 días.",
+            ),
+            BacklogItem(
+                codigo="HU-06",
+                titulo="Convertir la cita realizada en seguimiento",
+                sprint="Sprint 5",
+                estado="Hecho",
+                actor="Docente",
+                historia="Como docente, quiero que el resultado de una cita realizada abra un seguimiento familiar, para no perder el acuerdo.",
+                criterio="El resultado de realizada o no asistió tiene al menos 10 caracteres.",
+            ),
+            BacklogItem(
+                codigo="HU-07",
+                titulo="Cruzar inasistencia, alerta y tutoría",
+                sprint="Sprint 5",
+                estado="Hecho",
+                actor="Dirección",
+                historia="Como directora, quiero ver quién tiene patrón de faltas y aún no tiene seguimiento ni cita, para no dejar brechas.",
+                criterio="El reporte de correlación marca brecha solo si faltan ambas atenciones.",
+            ),
+            BacklogItem(
+                codigo="HU-08",
+                titulo="Consultar mi próxima tutoría",
+                sprint="Sprint 5",
+                estado="Hecho",
+                actor="Estudiante",
+                historia="Como estudiante, quiero ver la fecha de mi próxima cita, sin ver la lista de mis compañeros.",
+                criterio="El portal del estudiante no abre la agenda institucional.",
+            ),
         ]
     )
+    _seed_citas(db)
     db.commit()
+
+
+def _next_weekday(start: date, steps: int) -> date:
+    day = start
+    while day.weekday() >= 5:
+        day += timedelta(days=1)
+    left = steps
+    while left > 0:
+        day += timedelta(days=1)
+        if day.weekday() < 5:
+            left -= 1
+    end = date(ANIO_LECTIVO, 12, 20)
+    if day > end:
+        day = end
+        while day.weekday() >= 5:
+            day -= timedelta(days=1)
+    return day
+
+
+def _seed_citas(db: Session) -> None:
+    if db.query(TutoringAppointment).first():
+        return
+    director = db.query(User).filter_by(username="directora").first()
+    students = (
+        db.query(Student)
+        .filter(Student.es_historico.is_(False), Student.estado == StudentStatus.ACTIVO.value)
+        .order_by(Student.id.asc())
+        .limit(4)
+        .all()
+    )
+    motivos = [
+        "Citar al apoderado por inasistencias reiteradas.",
+        "Revisar con la familia el descenso del bimestre 2.",
+        "Coordinar apoyo en matemática y comunicación.",
+        "Confirmar si el traslado de IE sigue en trámite.",
+    ]
+    today = date.today()
+    for index, student in enumerate(students):
+        author_id = director.id if director else None
+        grade = db.query(SchoolGrade).filter_by(id=student.grade_id).first()
+        if grade and grade.tutor_id:
+            tutor = db.query(TeacherProfile).filter_by(id=grade.tutor_id).first()
+            if tutor:
+                author_id = tutor.user_id
+        if not author_id:
+            continue
+        db.add(
+            TutoringAppointment(
+                student_id=student.id,
+                author_id=author_id,
+                fecha=_next_weekday(today, index),
+                motivo=motivos[index],
+                estado="programada",
+                resultado="",
+            )
+        )
 
 
 def _fill_academic(db: Session, student: Student, courses: list[Course], *, profile: str, days: int = 42) -> None:

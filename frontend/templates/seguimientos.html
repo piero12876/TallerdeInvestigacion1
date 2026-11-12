@@ -4,7 +4,7 @@
 <div class="top">
   <div>
     <h1>Seguimientos</h1>
-    <p class="sub">Notas de tutoría sobre estudiantes de su carga. El registro se hace en la ficha. · {{ notes|length }} nota(s)</p>
+    <p class="sub">Tutoría clasificada por tipo y estado. {{ notes|length }} nota(s) · {{ abiertos }} abierta(s). El alta se hace en la ficha.</p>
   </div>
 </div>
 <form class="row" method="get">
@@ -15,6 +15,23 @@
       {% for g in grades %}
         <option value="{{ g.id }}" {% if grado == g.id %}selected{% endif %}>{{ g.nombre }}</option>
       {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Tipo</label>
+    <select name="tipo" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      {% for item, lab in [('academico','Académico'),('asistencia','Asistencia'),('familiar','Familiar'),('convivencia','Convivencia')] %}
+        <option value="{{ item }}" {% if tipo == item %}selected{% endif %}>{{ lab }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Estado</label>
+    <select name="estado" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      <option value="abierto" {% if estado == 'abierto' %}selected{% endif %}>Abierto</option>
+      <option value="cerrado" {% if estado == 'cerrado' %}selected{% endif %}>Cerrado</option>
     </select>
   </div>
   <div>
@@ -30,8 +47,15 @@
       · {{ n.student.grade.nombre if n.student and n.student.grade else 'Sin salón' }}
       · {{ n.author.full_name if n.author else 'Sistema' }}
       · {{ n.created_at.strftime('%d/%m/%Y %H:%M') }}
+      · <span class="badge b-activo">{{ n.tipo }}</span>
+      · <span class="badge {% if n.estado == 'abierto' %}b-medio{% else %}b-bajo{% endif %}">{{ n.estado }}</span>
       {% if n.student %}<a href="/estudiantes/{{ n.student.id }}">Ficha</a>{% endif %}
       <br>{{ n.contenido }}
+      <form method="post" action="/seguimientos/{{ n.id }}/estado" style="margin-top:8px">
+        {% include "_csrf.html" %}
+        <input type="hidden" name="estado" value="{% if n.estado == 'abierto' %}cerrado{% else %}abierto{% endif %}">
+        <button class="btn sec" type="submit">{% if n.estado == 'abierto' %}Cerrar caso{% else %}Reabrir{% endif %}</button>
+      </form>
     </div>
   {% else %}
     <p class="muted">No hay seguimientos con ese criterio. Ábralos desde la ficha del estudiante.</p>

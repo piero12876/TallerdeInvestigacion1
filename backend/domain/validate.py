@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from datetime import date
+from datetime import date, timedelta
 
 NAME_RE = re.compile(r"^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .-]{2,80}$")
 USER_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{2,79}$")
@@ -144,6 +144,65 @@ def attendance_date(day: date, *, year: int, today: date | None = None) -> str |
     return None
 
 
+CITA_ESTADOS = ("programada", "realizada", "no_asistio", "cancelada")
+
+
+def cita_estado(value: str) -> str:
+    text = (value or "").strip().lower()
+    return text if text in CITA_ESTADOS else ""
+
+
+def cita_motivo(value: str) -> tuple[str, str | None]:
+    text = " ".join((value or "").split())
+    if len(text) < 8:
+        return text, "El motivo debe tener al menos 8 caracteres."
+    return text[:180], None
+
+
+def cita_fecha(day: date | None, *, year: int, today: date | None = None) -> str | None:
+    if day is None:
+        return "Indique la fecha de la cita."
+    today = today or date.today()
+    if day < date(year, 3, 1) or day > date(year, 12, 20):
+        return f"La cita debe estar en el año lectivo {year} (marzo a diciembre)."
+    if day.weekday() >= 5:
+        return "Las citas de tutoría son de lunes a viernes."
+    if day > today + timedelta(days=21):
+        return "Programe la cita dentro de los próximos 21 días."
+    return None
+
+
+def cita_resultado(estado: str, value: str) -> tuple[str, str | None]:
+    text = " ".join((value or "").split())
+    if estado in {"realizada", "no_asistio"} and len(text) < 10:
+        return text, "Registre el resultado de la cita (mínimo 10 caracteres)."
+    if len(text) > 500:
+        return text[:500], "El resultado admite como máximo 500 caracteres."
+    return text, None
+
+
+def followup_tipo(value: str) -> str:
+    text = (value or "academico").strip().lower()
+    return text if text in {"academico", "familiar", "convivencia", "asistencia"} else ""
+
+
+def followup_estado(value: str) -> str:
+    text = (value or "").strip().lower()
+    return text if text in {"abierto", "cerrado"} else ""
+
+
+def justificacion_texto(value: str) -> tuple[str, str | None]:
+    text = " ".join((value or "").split())
+    if len(text) < 8:
+        return text, "La falta justificada necesita un motivo de al menos 8 caracteres."
+    return text[:160], None
+
+
+def cita_canal(value: str) -> str:
+    text = (value or "presencial").strip().lower()
+    return text if text in {"presencial", "llamada", "virtual"} else ""
+
+
 def followup_text(value: str) -> tuple[str, str | None]:
     text = " ".join((value or "").split())
     if len(text) < 10:
@@ -159,7 +218,7 @@ def csv_cell(value) -> str:
 
 
 def report_tipo(value: str) -> str:
-    if value in {"priorizados", "rendimiento", "asistencia", "padron"}:
+    if value in {"priorizados", "rendimiento", "asistencia", "padron", "correlacion"}:
         return value
     return "priorizados"
 

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Agenda de atención · Exellenti{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <h1>Agenda de atención</h1>
+    <p class="sub">Citas de tutoría para los casos de su carga. {{ rows|length }} cita(s) · {{ pendientes }} programada(s) desde hoy.</p>
+  </div>
+  <button class="btn" type="button" onclick="window.print()">Imprimir</button>
+</div>
+<form class="row" method="get">
+  <div>
+    <label>Salón</label>
+    <select name="grado" onchange="this.form.submit()">
+      <option value="0">Todos</option>
+      {% for g in grades %}
+        <option value="{{ g.id }}" {% if grado == g.id %}selected{% endif %}>{{ g.nombre }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Estado</label>
+    <select name="estado" onchange="this.form.submit()">
+      <option value="">Todos</option>
+      <option value="programada" {% if estado == 'programada' %}selected{% endif %}>Programada</option>
+      <option value="realizada" {% if estado == 'realizada' %}selected{% endif %}>Realizada</option>
+      <option value="no_asistio" {% if estado == 'no_asistio' %}selected{% endif %}>No asistió</option>
+      <option value="cancelada" {% if estado == 'cancelada' %}selected{% endif %}>Cancelada</option>
+    </select>
+  </div>
+  <div>
+    <label>Buscar</label>
+    <input name="q" value="{{ q }}" maxlength="80" placeholder="Estudiante, código o motivo" autocomplete="off">
+  </div>
+  <button class="btn sec" type="submit">Filtrar</button>
+</form>
+<div class="card" style="margin-bottom:16px">
+  <h3 style="margin:0 0 10px">Programar cita</h3>
+  <form method="post" action="/citas" class="form-grid">
+    {% include "_csrf.html" %}
+    <div>
+      <label>Estudiante</label>
+      <select name="student_id" required>
+        <option value="">Seleccione</option>
+        {% for s in alumnos %}
+          <option value="{{ s.id }}">{{ s.full_name }} · {{ s.grade.nombre if s.grade else 'Sin salón' }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>Fecha</label>
+      <input type="date" name="fecha" required min="{{ anio }}-03-01" max="{{ anio }}-12-20">
+    </div>
+    <div>
+      <label>Canal</label>
+      <select name="canal">
+        <option value="presencial">Presencial</option>
+        <option value="llamada">Llamada</option>
+        <option value="virtual">Virtual</option>
+      </select>
+    </div>
+    <div class="full">
+      <label>Motivo</label>
+      <input name="motivo" required minlength="8" maxlength="180" placeholder="Por qué se cita a la familia">
+    </div>
+    <div class="full">
+      <button class="btn" type="submit">Programar</button>
+    </div>
+  </form>
+</div>
+<div class="card table-wrap">
+  <input data-row-filter="#tabla-citas" placeholder="Filtrar en la tabla" style="margin-bottom:10px;width:100%;max-width:320px">
+  <table id="tabla-citas">
+    <thead>
+      <tr><th>Fecha</th><th>Estudiante</th><th>Salón</th><th>Motivo</th><th>Estado</th><th>Cierre</th></tr>
+    </thead>
+    <tbody>
+    {% for row in rows %}
+      <tr>
+        <td>{{ row.fecha.strftime('%d/%m/%Y') }}</td>
+        <td><a href="/estudiantes/{{ row.student.id }}">{{ row.student.full_name }}</a></td>
+        <td>{{ row.student.grade.nombre if row.student.grade else '—' }}</td>
+        <td>{{ row.motivo }}<br><span class="muted">{{ row.canal }}</span>{% if row.resultado %}<br><span class="muted">{{ row.resultado }}</span>{% endif %}</td>
+        <td><span class="badge b-{{ row.estado }}">{{ row.estado.replace('_', ' ') }}</span></td>
+        <td>
+          <form method="post" action="/citas/{{ row.id }}">
+            {% include "_csrf.html" %}
+            <select name="estado" required>
+              {% for item in cita_estados %}
+                <option value="{{ item }}" {% if row.estado == item %}selected{% endif %}>{{ item.replace('_', ' ') }}</option>
+              {% endfor %}
+            </select>
+            <input name="resultado" value="{{ row.resultado }}" maxlength="500" placeholder="Resultado si se realizó o no asistió">
+            <select name="canal">
+              {% for item in ['presencial','llamada','virtual'] %}
+                <option value="{{ item }}" {% if row.canal == item %}selected{% endif %}>{{ item }}</option>
+              {% endfor %}
+            </select>
+            <label class="check-lab" style="margin-top:0"><input type="checkbox" name="abrir_seguimiento" value="1"> Abrir seguimiento al marcar realizada</label>
+            <button class="btn sec" type="submit">Guardar</button>
+          </form>
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="6" class="muted">No hay citas con ese criterio.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

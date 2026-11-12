@@ -4,7 +4,7 @@
 <div class="top">
   <div>
     <h1>Product Backlog (Scrum)</h1>
-    <p class="sub">Organización del desarrollo del sistema web según el plan de tesis. Cuatro incrementos: datos, modelo, priorización y evaluación. · {{ items|length }} ítem(s)</p>
+    <p class="sub">Historias de usuario del sistema: rol, necesidad y criterio de aceptación. {{ items|length }} ítem(s)</p>
   </div>
 </div>
 <form class="row" method="get">
@@ -30,11 +30,12 @@
 <div class="card">
 <input data-row-filter="#tabla-scrum" placeholder="Filtrar ítem" style="margin-bottom:10px;width:100%;max-width:320px">
 <table id="tabla-scrum">
-  <thead><tr><th>Ítem</th><th>Sprint</th><th>Estado</th><th>Criterio de aceptación</th></tr></thead>
+  <thead><tr><th>Historia</th><th>Actor</th><th>Sprint</th><th>Estado</th><th>Criterio de aceptación</th></tr></thead>
   <tbody>
   {% for i in items %}
     <tr>
-      <td><b>{{ i.codigo }}</b><br>{{ i.titulo }}</td>
+      <td><b>{{ i.codigo }}</b><br>{{ i.titulo }}{% if i.historia %}<br><span class="muted">{{ i.historia }}</span>{% endif %}</td>
+      <td>{{ i.actor or '—' }}</td>
       <td>{{ i.sprint }}</td>
       <td><span class="badge b-bajo">{{ i.estado }}</span></td>
       <td>{{ i.criterio }}</td>

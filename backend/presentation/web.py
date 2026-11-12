@@ -48,6 +48,14 @@ from backend.domain.validate import (
     dni_peru,
     enrollment_date,
     followup_text,
+    followup_tipo,
+    followup_estado,
+    justificacion_texto,
+    cita_canal,
+    cita_estado,
+    cita_fecha,
+    cita_motivo,
+    cita_resultado,
     optional_address,
     optional_email,
     optional_name,
@@ -80,12 +88,14 @@ from backend.infrastructure.database import (
     Student,
     TeacherAssignment,
     TeacherProfile,
+    TutoringAppointment,
     User,
 )
 from ml.engine import FEATURE_LABELS, predict_all, student_feature_map, train_and_select
 from backend.infrastructure.stats import (
     academic_evolution,
     attendance_patterns,
+    brechas_atencion,
     institution_snapshot,
     course_teacher_map,
     student_progress,
@@ -462,6 +472,16 @@ def dashboard(request: Request, db: Session = Depends(db_session)):
             .filter(Prediction.student_id == student.id, Prediction.vigente.is_(True))
             .first()
         )
+        proxima = (
+            db.query(TutoringAppointment)
+            .filter(
+                TutoringAppointment.student_id == student.id,
+                TutoringAppointment.estado == "programada",
+                TutoringAppointment.fecha >= date.today(),
+            )
+            .order_by(TutoringAppointment.fecha.asc())
+            .first()
+        )
         return templates.TemplateResponse(
             "dashboard.html",
             ctx(
@@ -470,6 +490,7 @@ def dashboard(request: Request, db: Session = Depends(db_session)):
                 student=student,
                 progress=student_progress(student),
                 pred=pred,
+                proxima=proxima,
                 tutor=tutors_by_grade(db).get(student.grade_id or 0, "Sin tutor de aula"),
                 docentes_aula=teachers_of_grade(db, student.grade_id) if student.grade_id else [],
             ),
@@ -496,6 +517,13 @@ def dashboard(request: Request, db: Session = Depends(db_session)):
             .all()
         )
     snap = institution_snapshot(db)
+    citas_pendientes = (
+        db.query(TutoringAppointment)
+        .filter(TutoringAppointment.student_id.in_(allowed_ids or {-1}))
+        .filter(TutoringAppointment.estado == "programada")
+        .filter(TutoringAppointment.fecha >= date.today())
+        .count()
+    )
     my_salones = sorted({a.grade.nombre for a in my_assignments if a.grade})
     tutored = list(user.teacher_profile.tutored_grades) if user.teacher_profile else []
     panel = (
@@ -517,6 +545,7 @@ def dashboard(request: Request, db: Session = Depends(db_session)):
             panel=panel,
             my_salones=my_salones,
             my_cursos=len({a.course_id for a in my_assignments}),
+            citas_pendientes=citas_pendientes,
         ),
     )
 
@@ -872,6 +901,7 @@ def add_followup(
     request: Request,
     student_id: int,
     contenido: str = Form(...),
+    tipo: str = Form("academico"),
     csrf: str = Form(""),
     db: Session = Depends(db_session),
 ):
@@ -886,10 +916,11 @@ def add_followup(
     if student_id not in allowed:
         return forbidden()
     texto, err = followup_text(contenido)
-    if err:
-        request.session["flash"] = err
+    tipo_ok = followup_tipo(tipo)
+    if err or not tipo_ok:
+        request.session["flash"] = err or "El tipo de seguimiento no es válido."
         return RedirectResponse(f"/estudiantes/{student_id}", status_code=303)
-    db.add(FollowUp(student_id=student_id, author_id=user.id, contenido=texto))
+    db.add(FollowUp(student_id=student_id, author_id=user.id, contenido=texto, tipo=tipo_ok, estado="abierto"))
     audit(db, user, "seguimiento", str(student_id))
     db.commit()
     request.session["flash_ok"] = "Seguimiento registrado."
@@ -897,7 +928,14 @@ def add_followup(
 
 
 @router.get("/seguimientos")
-def followups_list(request: Request, q: str = "", grado: int = 0, db: Session = Depends(db_session)):
+def followups_list(
+    request: Request,
+    q: str = "",
+    grado: int = 0,
+    tipo: str = "",
+    estado: str = "",
+    db: Session = Depends(db_session),
+):
     user = current_user(request, db)
     if not user:
         return login_redirect("/seguimientos")
@@ -928,10 +966,214 @@ def followups_list(request: Request, q: str = "", grado: int = 0, db: Session = 
                 or ql in (n.contenido or "").lower()
             )
         ]
+    tipo = followup_tipo(tipo) if tipo else ""
+    estado = followup_estado(estado)
+    if tipo:
+        notes = [n for n in notes if n.tipo == tipo]
+    if estado:
+        notes = [n for n in notes if n.estado == estado]
+    abiertos = sum(1 for n in notes if n.estado == "abierto")
     return templates.TemplateResponse(
         "seguimientos.html",
-        ctx(request, user, notes=notes, grades=grades, grado=grado, q=q),
+        ctx(
+            request,
+            user,
+            notes=notes,
+            grades=grades,
+            grado=grado,
+            q=q,
+            tipo=tipo,
+            estado=estado,
+            abiertos=abiertos,
+        ),
     )
+
+
+@router.post("/seguimientos/{note_id}/estado")
+def followup_close(
+    request: Request,
+    note_id: int,
+    estado: str = Form("cerrado"),
+    csrf: str = Form(""),
+    db: Session = Depends(db_session),
+):
+    user = current_user(request, db)
+    if not user:
+        return login_redirect("/seguimientos")
+    if user.role not in FOLLOW_ROLES:
+        return forbidden()
+    if not csrf_ok(request, csrf):
+        return reject_csrf(request, "/seguimientos")
+    note = db.query(FollowUp).filter(FollowUp.id == note_id).first()
+    allowed = {s.id for s in visible_students_query(db, user).all()}
+    nuevo = followup_estado(estado)
+    if not note or note.student_id not in allowed or not nuevo:
+        return forbidden()
+    note.estado = nuevo
+    audit(db, user, "seguimiento", f"{nuevo} {note_id}")
+    db.commit()
+    request.session["flash_ok"] = "Seguimiento actualizado."
+    return RedirectResponse("/seguimientos", status_code=303)
+
+
+@router.get("/citas")
+def citas_list(
+    request: Request,
+    q: str = "",
+    grado: int = 0,
+    estado: str = "",
+    db: Session = Depends(db_session),
+):
+    user = current_user(request, db)
+    if not user:
+        return login_redirect("/citas")
+    if user.role not in FOLLOW_ROLES:
+        return forbidden()
+    grades = _grades_visible(db, user)
+    grado = _id_in(grado, grades)
+    estado = cita_estado(estado)
+    allowed = visible_students_query(db, user).all()
+    allowed_ids = {s.id for s in allowed}
+    rows = (
+        db.query(TutoringAppointment)
+        .options(
+            joinedload(TutoringAppointment.student).joinedload(Student.grade),
+            joinedload(TutoringAppointment.author),
+        )
+        .filter(TutoringAppointment.student_id.in_(allowed_ids or {-1}))
+        .order_by(TutoringAppointment.fecha.asc(), TutoringAppointment.id.asc())
+        .all()
+    )
+    if grado:
+        rows = [row for row in rows if row.student and row.student.grade_id == grado]
+    if estado:
+        rows = [row for row in rows if row.estado == estado]
+    q = search_q(q)
+    if q:
+        ql = q.lower()
+        rows = [
+            row
+            for row in rows
+            if row.student
+            and (
+                ql in row.student.full_name.lower()
+                or ql in (row.student.codigo or "").lower()
+                or ql in (row.motivo or "").lower()
+            )
+        ]
+    pendientes = sum(1 for row in rows if row.estado == "programada" and row.fecha >= date.today())
+    return templates.TemplateResponse(
+        "citas.html",
+        ctx(
+            request,
+            user,
+            rows=rows,
+            grades=grades,
+            grado=grado,
+            estado=estado,
+            q=q,
+            pendientes=pendientes,
+            alumnos=allowed,
+            cita_estados=("programada", "realizada", "no_asistio", "cancelada"),
+        ),
+    )
+
+
+@router.post("/citas")
+def citas_create(
+    request: Request,
+    student_id: int = Form(...),
+    fecha: str = Form(""),
+    motivo: str = Form(""),
+    canal: str = Form("presencial"),
+    csrf: str = Form(""),
+    db: Session = Depends(db_session),
+):
+    user = current_user(request, db)
+    if not user:
+        return login_redirect("/citas")
+    if user.role not in FOLLOW_ROLES:
+        return forbidden()
+    if not csrf_ok(request, csrf):
+        return reject_csrf(request, "/citas")
+    allowed = {s.id for s in visible_students_query(db, user).all()}
+    if student_id not in allowed:
+        return forbidden()
+    day = parse_iso_date(fecha)
+    err = cita_fecha(day, year=ANIO_LECTIVO)
+    texto, motivo_err = cita_motivo(motivo)
+    canal_ok = cita_canal(canal)
+    if err or motivo_err or day is None or not canal_ok:
+        request.session["flash"] = err or motivo_err or "El canal de la cita no es válido."
+        return RedirectResponse("/citas", status_code=303)
+    db.add(
+        TutoringAppointment(
+            student_id=student_id,
+            author_id=user.id,
+            fecha=day,
+            motivo=texto,
+            canal=canal_ok,
+            estado="programada",
+        )
+    )
+    audit(db, user, "cita", f"programada estudiante {student_id}")
+    db.commit()
+    request.session["flash_ok"] = "Cita de atención programada."
+    return RedirectResponse("/citas", status_code=303)
+
+
+@router.post("/citas/{cita_id}")
+def citas_update(
+    request: Request,
+    cita_id: int,
+    estado: str = Form(""),
+    resultado: str = Form(""),
+    canal: str = Form(""),
+    abrir_seguimiento: str = Form(""),
+    csrf: str = Form(""),
+    db: Session = Depends(db_session),
+):
+    user = current_user(request, db)
+    if not user:
+        return login_redirect("/citas")
+    if user.role not in FOLLOW_ROLES:
+        return forbidden()
+    if not csrf_ok(request, csrf):
+        return reject_csrf(request, "/citas")
+    cita = db.query(TutoringAppointment).filter(TutoringAppointment.id == cita_id).first()
+    allowed = {s.id for s in visible_students_query(db, user).all()}
+    if not cita or cita.student_id not in allowed:
+        return forbidden()
+    nuevo = cita_estado(estado)
+    if not nuevo:
+        request.session["flash"] = "Estado de la cita no válido."
+        return RedirectResponse("/citas", status_code=303)
+    texto, err = cita_resultado(nuevo, resultado)
+    if err:
+        request.session["flash"] = err
+        return RedirectResponse("/citas", status_code=303)
+    cita.estado = nuevo
+    cita.resultado = texto
+    canal_ok = cita_canal(canal) if canal else cita.canal
+    if canal and not canal_ok:
+        request.session["flash"] = "El canal de la cita no es válido."
+        return RedirectResponse("/citas", status_code=303)
+    if canal_ok:
+        cita.canal = canal_ok
+    if nuevo == "realizada" and abrir_seguimiento == "1":
+        db.add(
+            FollowUp(
+                student_id=cita.student_id,
+                author_id=user.id,
+                contenido=texto,
+                tipo="familiar",
+                estado="abierto",
+            )
+        )
+    audit(db, user, "cita", f"{nuevo} cita {cita_id}")
+    db.commit()
+    request.session["flash_ok"] = "Cita actualizada."
+    return RedirectResponse("/citas", status_code=303)
 
 
 @router.get("/estudiantes/{student_id}/editar")
@@ -1249,7 +1491,15 @@ def attendance_page(
             .all()
         )
         marks = {r.student_id: r.estado for r in recs}
+        detalles = {r.student_id: r.detalle or "" for r in recs}
+    else:
+        detalles = {}
     patterns = attendance_patterns(db, students) if students else None
+    brechas = brechas_atencion(db, students, patterns) if students else []
+    day_counts = {"presente": 0, "falta": 0, "tardanza": 0, "justificada": 0}
+    for estado in marks.values():
+        if estado in day_counts:
+            day_counts[estado] += 1
     date_err = attendance_date(day, year=ANIO_LECTIVO)
     return templates.TemplateResponse(
         "asistencia.html",
@@ -1261,8 +1511,11 @@ def attendance_page(
             fecha=day.isoformat(),
             students=students,
             marks=marks,
+            detalles=detalles,
             can_edit=can_edit_academic(user.role) and not date_err,
             patterns=patterns,
+            brechas=brechas,
+            day_counts=day_counts,
             date_err=date_err,
             today=date.today().isoformat(),
             fecha_min=f"{ANIO_LECTIVO}-03-01",
@@ -1293,13 +1546,21 @@ async def attendance_save(request: Request, db: Session = Depends(db_session)):
         return forbidden()
     students = _activos(visible_students_query(db, user)).filter(Student.grade_id == grado).all()
     valid = {s.value for s in AttendanceStatus}
+    omitted = 0
     for student in students:
         estado = form.get(f"a_{student.id}")
         if estado not in valid:
             continue
+        detalle = ""
+        if estado == "justificada":
+            detalle, err = justificacion_texto(str(form.get(f"j_{student.id}") or ""))
+            if err:
+                omitted += 1
+                continue
         rec = db.query(AttendanceRecord).filter_by(student_id=student.id, fecha=day).first()
         if rec:
             rec.estado = estado
+            rec.detalle = detalle
             rec.registrado_por = user.id
         else:
             db.add(
@@ -1307,6 +1568,7 @@ async def attendance_save(request: Request, db: Session = Depends(db_session)):
                     student_id=student.id,
                     fecha=day,
                     estado=estado,
+                    detalle=detalle,
                     registrado_por=user.id,
                 )
             )
@@ -1314,7 +1576,12 @@ async def attendance_save(request: Request, db: Session = Depends(db_session)):
     db.commit()
     if not SKIP_ML:
         predict_all(db)
-    request.session["flash_ok"] = "Asistencia guardada."
+    if omitted:
+        request.session["flash"] = (
+            f"Asistencia guardada. Se omitieron {omitted} justificada(s) sin motivo de al menos 8 caracteres."
+        )
+    else:
+        request.session["flash_ok"] = "Asistencia guardada."
     return RedirectResponse(f"/asistencia?grado={grado}&fecha={day.isoformat()}", status_code=303)
 
 
@@ -1545,6 +1812,19 @@ def _report_headers(tipo: str) -> list[str]:
         return ["codigo", "estudiante", "salon", "pct_asistencia", "faltas", "tardanzas", "racha", "patron"]
     if tipo == "padron":
         return ["codigo", "estudiante", "salon", "sexo", "tipo", "lengua", "vive_con", "seguro", "nnee", "estado"]
+    if tipo == "correlacion":
+        return [
+            "codigo",
+            "estudiante",
+            "salon",
+            "pct_asistencia",
+            "faltas",
+            "racha",
+            "atencion",
+            "seguimiento_abierto",
+            "cita_programada",
+            "brecha",
+        ]
     return ["prioridad", "codigo", "estudiante", "salon", "probabilidad", "nivel_modelo", "atencion"]
 
 
@@ -1597,6 +1877,29 @@ def _report_rows(db: Session, user: User, tipo: str, grado: int, estado: str = "
                 }
             )
         return rows, "Patrones de asistencia"
+    if tipo == "correlacion":
+        patterns = attendance_patterns(db, students)
+        brechas = {row["id"]: row for row in brechas_atencion(db, students, patterns)}
+        by_id = {row["id"]: row for row in patterns["filas"]}
+        rows = []
+        for student in students:
+            p = by_id.get(student.id, {})
+            b = brechas.get(student.id)
+            rows.append(
+                {
+                    "codigo": student.codigo,
+                    "estudiante": student.full_name,
+                    "salon": student.grade.nombre if student.grade else "",
+                    "pct_asistencia": p.get("pct", ""),
+                    "faltas": p.get("faltas", ""),
+                    "racha": p.get("racha", ""),
+                    "atencion": (b or {}).get("atencion", ""),
+                    "seguimiento_abierto": "sí" if b and b["seguimiento"] else "no",
+                    "cita_programada": "sí" if b and b["cita"] else "no",
+                    "brecha": "sí" if b and b["brecha"] else "no",
+                }
+            )
+        return rows, "Correlación de inasistencia, alerta y tutoría"
     if tipo == "padron":
         rows = []
         for student in students:

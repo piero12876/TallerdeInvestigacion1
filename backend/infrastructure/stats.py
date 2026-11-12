@@ -1,4 +1,5 @@
 from collections import Counter
+from datetime import date
 
 from sqlalchemy.orm import Session, joinedload
 
@@ -13,6 +14,7 @@ from backend.infrastructure.database import (
     Student,
     TeacherAssignment,
     TeacherProfile,
+    TutoringAppointment,
     User,
 )
 
@@ -323,6 +325,52 @@ def attendance_patterns(db: Session, students: list[Student]) -> dict:
             {"label": "Justif.", "value": totals.get("justificada", 0), "color": "#1b6b93"},
         ],
     }
+
+
+def brechas_atencion(db: Session, students: list[Student], patterns: dict | None) -> list[dict]:
+    """Cruza patrón de inasistencia con alerta, seguimiento abierto y cita vigente."""
+    if not patterns:
+        return []
+    ids = [s.id for s in students]
+    abiertos = {
+        row[0]
+        for row in db.query(FollowUp.student_id)
+        .filter(FollowUp.student_id.in_(ids or [-1]), FollowUp.estado == "abierto")
+        .all()
+    }
+    citadas = {
+        row[0]
+        for row in db.query(TutoringAppointment.student_id)
+        .filter(
+            TutoringAppointment.student_id.in_(ids or [-1]),
+            TutoringAppointment.estado == "programada",
+            TutoringAppointment.fecha >= date.today(),
+        )
+        .all()
+    }
+    riesgos = {
+        row.student_id: row.nivel_riesgo
+        for row in db.query(Prediction)
+        .filter(Prediction.student_id.in_(ids or [-1]), Prediction.vigente.is_(True))
+        .all()
+    }
+    rows = []
+    for fila in patterns["filas"]:
+        if not fila["patron"]:
+            continue
+        sid = fila["id"]
+        seguimiento = sid in abiertos
+        cita = sid in citadas
+        rows.append(
+            {
+                **fila,
+                "seguimiento": seguimiento,
+                "cita": cita,
+                "brecha": not seguimiento and not cita,
+                "atencion": riesgos.get(sid, ""),
+            }
+        )
+    return rows
 
 
 def student_progress(student: Student) -> dict:

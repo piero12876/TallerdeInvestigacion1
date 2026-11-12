@@ -6,6 +6,7 @@ __pycache__/
 venv/
 .env
 data/*.pkl
+data/schema.txt
 ml/*.pkl
 ml/*.joblib
 .idea/

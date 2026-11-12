@@ -61,4 +61,7 @@ def login_limited(ip: str, *, max_hits: int = 8, window: int = 600) -> bool:
 
 
 def client_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for", "")
+    if forwarded:
+        return forwarded.split(",")[0].strip()[:80] or "unknown"
     return (request.client.host if request.client else "unknown")[:80]

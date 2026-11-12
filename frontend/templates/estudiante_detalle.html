@@ -134,7 +134,9 @@
   <h3 style="margin:0 0 10px">Seguimiento</h3>
   {% for n in student.followups %}
     <div class="note">
-      <b>{{ n.author.full_name if n.author else 'Sistema' }}</b> · {{ n.created_at.strftime('%d/%m/%Y %H:%M') }}<br>
+      <b>{{ n.author.full_name if n.author else 'Sistema' }}</b>
+      · {{ n.tipo }} · {{ n.estado }}
+      · {{ n.created_at.strftime('%d/%m/%Y %H:%M') }}<br>
       {{ n.contenido }}
     </div>
   {% else %}
@@ -144,6 +146,13 @@
   <form method="post" action="/estudiantes/{{ student.id }}/seguimiento" class="stack" style="margin-top:10px">
     {% include "_csrf.html" %}
     <textarea name="contenido" rows="3" required minlength="10" maxlength="2000" title="Mínimo 10 caracteres." placeholder="Observación de tutoría (mínimo 10 caracteres)"></textarea>
+    <label>Tipo</label>
+    <select name="tipo">
+      <option value="academico">Académico</option>
+      <option value="asistencia">Asistencia</option>
+      <option value="familiar">Familiar</option>
+      <option value="convivencia">Convivencia</option>
+    </select>
     <button class="btn" type="submit">Registrar seguimiento</button>
   </form>
   {% endif %}

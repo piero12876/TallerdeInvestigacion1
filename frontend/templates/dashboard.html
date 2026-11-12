@@ -14,8 +14,13 @@
   <a class="mod" href="/calificaciones"><span class="k">Evaluación</span><strong>{{ snap.promedio_ie }}</strong><span>Promedio institucional 0–20</span></a>
   <a class="mod" href="/asistencia"><span class="k">Asistencia</span><strong>{{ snap.asistencia_pct }}%</strong><span>Pase de lista por tutor de aula</span></a>
   <a class="mod" href="/riesgo"><span class="k">Alerta temprana</span><strong>{{ counts.alto }}</strong><span>Casos de atención alta</span></a>
+  <a class="mod" href="/citas"><span class="k">Agenda</span><strong>{{ citas_pendientes }}</strong><span>Citas programadas desde hoy</span></a>
   <a class="mod" href="/docentes"><span class="k">Personal</span><strong>{{ snap.docentes }}</strong><span>Aula 1.°–2.° · área desde 3.°</span></a>
   <a class="mod" href="/modelo"><span class="k">Modelo</span><strong>{{ snap.tutores }}</strong><span>Tutores · métricas OOF</span></a>
+</div>
+<div class="card" style="margin-bottom:16px">
+  <h3 style="margin:0 0 10px">Atención en la IE</h3>
+  <div data-bars='{{ [{"label":"Alto","value":counts.alto,"color":"#b42318"},{"label":"Medio","value":counts.medio,"color":"#b58112"},{"label":"Bajo","value":counts.bajo,"color":"#1f7a4d"}] | tojson }}'></div>
 </div>
 <div class="card">
   <h3 style="margin:0 0 10px">Atención inmediata</h3>
@@ -45,6 +50,7 @@
   <a class="mod" href="/asistencia"><span class="k">Asistencia</span><strong>{{ panel.salones }}</strong><span>Pase de lista de mi salón</span></a>
   {% endif %}
   <a class="mod" href="/riesgo"><span class="k">Alerta temprana</span><strong>{{ panel.alto }}</strong><span>Atención alta en mi carga</span></a>
+  <a class="mod" href="/citas"><span class="k">Agenda</span><strong>{{ citas_pendientes }}</strong><span>Citas programadas de mi carga</span></a>
   <a class="mod" href="/seguimientos"><span class="k">Seguimientos</span><strong>•</strong><span>Notas de tutoría de mi carga</span></a>
   <a class="mod" href="/reportes"><span class="k">Reportes</span><strong>{{ panel.salones }}</strong><span>CSV e impresión de mi carga</span></a>
 </div>
@@ -85,6 +91,9 @@
   <a class="mod" href="/mi-asistencia"><span class="k">Mi asistencia</span><strong>{{ progress.asistencia_bars[0].value if progress and progress.asistencia_bars else 0 }}</strong><span>Días presente registrados</span></a>
   {% if pred %}
   <a class="mod" href="/mi-ficha"><span class="k">Mi atención</span><strong>{{ pred.nivel_riesgo }}</strong><span>Prioridad {{ pred.prioridad }} · {{ '%.0f'|format(pred.probabilidad * 100) }}%</span></a>
+  {% endif %}
+  {% if proxima %}
+  <a class="mod" href="/mi-ficha"><span class="k">Próxima tutoría</span><strong>{{ proxima.fecha.strftime('%d/%m') }}</strong><span>{{ proxima.motivo }}</span></a>
   {% endif %}
 </div>
 {% if progress %}
