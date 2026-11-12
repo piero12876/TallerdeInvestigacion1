@@ -1,4 +1,4 @@
-from app.domain.enums import Role
+from backend.domain.enums import Role
 
 EDITORS = {Role.DIRECTORA.value, Role.DOCENTE.value}
 RISK_ROLES = {Role.DIRECTORA.value, Role.DOCENTE.value}

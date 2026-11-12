@@ -7,7 +7,7 @@ from collections import defaultdict
 
 from fastapi import Request
 
-from app.config import TESTING
+from backend.config import TESTING
 
 _LOGIN_HITS: dict[str, list[float]] = defaultdict(list)
 

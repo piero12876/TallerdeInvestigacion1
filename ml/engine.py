@@ -23,9 +23,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sqlalchemy.orm import Session, joinedload
 
-from app.config import MODEL_PATH
-from app.domain.enums import AttendanceStatus, RiskLevel, StudentStatus
-from app.infrastructure.database import ModelRun, Prediction, Student
+from backend.config import MODEL_PATH
+from backend.domain.enums import AttendanceStatus, RiskLevel, StudentStatus
+from backend.infrastructure.database import ModelRun, Prediction, Student
 
 FEATURE_NAMES = [
     "promedio",

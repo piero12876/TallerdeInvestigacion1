@@ -6,12 +6,12 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.config import BASE_DIR, SECRET_KEY, SKIP_ML
-from app.domain.validate import safe_next
-from app.infrastructure.database import ModelRun, Prediction, SessionLocal, init_db, reset_if_stale
-from app.infrastructure.ml_engine import predict_all, train_and_select
-from app.infrastructure.seed import seed_if_empty
-from app.presentation.web import router
+from backend.config import FRONTEND_DIR, SECRET_KEY, SKIP_ML
+from backend.domain.validate import safe_next
+from backend.infrastructure.database import ModelRun, Prediction, SessionLocal, init_db, reset_if_stale
+from ml.engine import predict_all, train_and_select
+from backend.infrastructure.seed import seed_if_empty
+from backend.presentation.web import router
 
 app = FastAPI(title="IE Exellenti — Riesgo de deserción")
 app.add_middleware(
@@ -22,7 +22,7 @@ app.add_middleware(
     https_only=False,
     max_age=60 * 60 * 8,
 )
-app.mount("/static", StaticFiles(directory=str(BASE_DIR / "presentation" / "static")), name="static")
+app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR / "static")), name="static")
 app.include_router(router)
 
 

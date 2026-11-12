@@ -2,8 +2,8 @@ from collections import Counter
 
 from sqlalchemy.orm import Session, joinedload
 
-from app.domain.enums import Role, StudentStatus, achievement
-from app.infrastructure.database import (
+from backend.domain.enums import Role, StudentStatus, achievement
+from backend.infrastructure.database import (
     AttendanceRecord,
     Course,
     FollowUp,

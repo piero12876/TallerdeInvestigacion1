@@ -8,8 +8,8 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 
-from app.config import ANIO_LECTIVO, BASE_DIR, DISTRITO, INSTITUCION, PROVINCIA, SKIP_ML
-from app.domain.access import (
+from backend.config import ANIO_LECTIVO, DISTRITO, FRONTEND_DIR, INSTITUCION, PROVINCIA, SKIP_ML
+from backend.domain.access import (
     AUDIT_ROLES,
     EDITORS,
     FOLLOW_ROLES,
@@ -23,7 +23,7 @@ from app.domain.access import (
     can_see_risk,
     nav_for,
 )
-from app.domain.enums import (
+from backend.domain.enums import (
     DISCAP_LABELS,
     LENGUA_LABELS,
     PARENTESCO_LABELS,
@@ -39,7 +39,7 @@ from app.domain.enums import (
     StudentStatus,
     achievement,
 )
-from app.domain.validate import (
+from backend.domain.validate import (
     attendance_date,
     attendance_mark,
     birth_date,
@@ -66,7 +66,7 @@ from app.domain.validate import (
     sexo_mf,
     username_ok,
 )
-from app.infrastructure.database import (
+from backend.infrastructure.database import (
     AttendanceRecord,
     AuditLog,
     BacklogItem,
@@ -82,8 +82,8 @@ from app.infrastructure.database import (
     TeacherProfile,
     User,
 )
-from app.infrastructure.ml_engine import FEATURE_LABELS, predict_all, student_feature_map, train_and_select
-from app.infrastructure.stats import (
+from ml.engine import FEATURE_LABELS, predict_all, student_feature_map, train_and_select
+from backend.infrastructure.stats import (
     academic_evolution,
     attendance_patterns,
     institution_snapshot,
@@ -93,7 +93,7 @@ from app.infrastructure.stats import (
     teachers_of_grade,
     tutors_by_grade,
 )
-from app.infrastructure.security import (
+from backend.infrastructure.security import (
     client_ip,
     csrf_ok,
     hash_password,
@@ -102,7 +102,7 @@ from app.infrastructure.security import (
     normalize_username,
     verify_password,
 )
-from app.presentation.deps import (
+from backend.presentation.deps import (
     current_user,
     forbidden,
     login_redirect,
@@ -112,7 +112,7 @@ from app.presentation.deps import (
     visible_students_query,
 )
 
-templates = Jinja2Templates(directory=str(BASE_DIR / "presentation" / "templates"))
+templates = Jinja2Templates(directory=str(FRONTEND_DIR / "templates"))
 templates.env.globals.update(
     institucion=INSTITUCION,
     distrito=DISTRITO,

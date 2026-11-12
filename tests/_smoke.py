@@ -4,8 +4,8 @@ from urllib.parse import urlencode
 from urllib.request import HTTPCookieProcessor, Request, build_opener
 import re
 
-from app.domain.enums import StudentStatus
-from app.infrastructure.database import ModelRun, Prediction, SchoolGrade, SessionLocal, Student, User
+from backend.domain.enums import StudentStatus
+from backend.infrastructure.database import ModelRun, Prediction, SchoolGrade, SessionLocal, Student, User
 
 db = SessionLocal()
 print("salones", db.query(SchoolGrade).count())

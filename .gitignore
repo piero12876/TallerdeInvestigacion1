@@ -5,8 +5,9 @@ __pycache__/
 .venv/
 venv/
 .env
-app/data/*.pkl
-app/data/*.joblib
+data/*.pkl
+ml/*.pkl
+ml/*.joblib
 .idea/
 .vscode/
 .pytest_cache/

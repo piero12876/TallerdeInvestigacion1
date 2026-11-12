@@ -16,7 +16,7 @@ sys.path.insert(0, str(ROOT))
 import pytest
 from fastapi.testclient import TestClient
 
-from app.main import app
+from backend.main import app
 
 
 @pytest.fixture(scope="session")

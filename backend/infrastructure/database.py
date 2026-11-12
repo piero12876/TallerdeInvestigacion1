@@ -17,7 +17,7 @@ from sqlalchemy import (
 from sqlalchemy import event
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, sessionmaker
 
-from app.config import DATABASE_URL, SCHEMA_VERSION
+from backend.config import DATABASE_URL, SCHEMA_VERSION
 
 
 class Base(DeclarativeBase):
@@ -278,7 +278,7 @@ class AuditLog(Base):
 
 
 def reset_if_stale() -> None:
-    from app.config import DATA_DIR, MODEL_PATH, TESTING
+    from backend.config import DATA_DIR, MODEL_PATH, TESTING
 
     if TESTING or ":memory:" in DATABASE_URL:
         return

@@ -73,4 +73,11 @@ Cubren login, autorización por rol, persistencia de notas, ocultamiento de ries
 
 ## Arquitectura
 
-Monolito en capas: `app/domain`, `app/infrastructure`, `app/presentation`. FastAPI + SQLite + Jinja2 + scikit-learn. Scrum organiza el desarrollo (`/scrum`); no es un tablero para el colegio.
+```
+frontend/     plantillas Jinja2 y CSS/JS
+backend/      FastAPI, dominio, SQLite y reglas de negocio
+ml/           entrenamiento y predicción (scikit-learn)
+data/         SQLite y versión de esquema
+```
+
+FastAPI sirve las vistas de `frontend/`. Scrum organiza el desarrollo (`/scrum`); no es un tablero para el colegio.

@@ -1,8 +1,8 @@
 import re
 from datetime import date, timedelta
 
-from app.config import ANIO_LECTIVO
-from app.domain.validate import (
+from backend.config import ANIO_LECTIVO
+from backend.domain.validate import (
     attendance_date,
     attendance_mark,
     birth_date,
@@ -18,7 +18,7 @@ from app.domain.validate import (
     safe_next,
     search_q,
 )
-from app.infrastructure.database import AttendanceRecord, Course, GradeRecord, SchoolGrade, SessionLocal, Student, User
+from backend.infrastructure.database import AttendanceRecord, Course, GradeRecord, SchoolGrade, SessionLocal, Student, User
 
 
 def test_dni_and_nota_rules():

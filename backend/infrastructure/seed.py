@@ -5,10 +5,10 @@ from datetime import date, timedelta
 
 from sqlalchemy.orm import Session
 
-from app.config import ANIO_LECTIVO
-from app.domain.enums import AttendanceStatus, Role, StudentStatus
-from app.infrastructure.accounts import STAFF_ACCOUNTS, STUDENT_ACCOUNTS
-from app.infrastructure.database import (
+from backend.config import ANIO_LECTIVO
+from backend.domain.enums import AttendanceStatus, Role, StudentStatus
+from backend.infrastructure.accounts import STAFF_ACCOUNTS, STUDENT_ACCOUNTS
+from backend.infrastructure.database import (
     AttendanceRecord,
     BacklogItem,
     Course,
@@ -21,7 +21,7 @@ from app.infrastructure.database import (
     TeacherProfile,
     User,
 )
-from app.infrastructure.security import hash_password
+from backend.infrastructure.security import hash_password
 
 rng = random.Random(42)
 SECTIONS = ["A", "B", "C"]

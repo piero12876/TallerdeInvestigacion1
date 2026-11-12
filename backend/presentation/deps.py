@@ -2,8 +2,8 @@ from fastapi import Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session, joinedload
 
-from app.domain.enums import Role
-from app.infrastructure.database import Student, TeacherProfile, User
+from backend.domain.enums import Role
+from backend.infrastructure.database import Student, TeacherProfile, User
 
 
 STAFF_ROLES = {Role.DIRECTORA.value, Role.DOCENTE.value}
