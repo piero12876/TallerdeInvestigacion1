@@ -51,8 +51,9 @@ async def db_guard(request: Request, call_next):
     if _startup_error and request.url.path not in {"/health", "/favicon.ico"}:
         return HTMLResponse(
             "<h1>No se pudo abrir la base</h1>"
-            "<p>Revise que DATABASE_URL sea la dirección pública de PostgreSQL "
-            "y que EXELLENTI_SECRET esté definida.</p>",
+            "<p>En Railway, el servicio web tiene que tener la variable DATABASE_URL "
+            "que entrega Postgres (la interna). En Vercel, DATABASE_URL tiene que ser "
+            "la dirección pública, no la que termina en railway.internal.</p>",
             status_code=503,
         )
     return await call_next(request)
@@ -104,13 +105,19 @@ def _startup() -> None:
     db = SessionLocal()
     try:
         seed_if_empty(db)
-        if SKIP_ML or ON_VERCEL:
-            return
+    finally:
+        db.close()
+    if SKIP_ML or ON_VERCEL:
+        return
+    db = SessionLocal()
+    try:
         has_model = db.query(ModelRun).filter(ModelRun.selected.is_(True)).first()
         if not has_model or not MODEL_PATH.exists():
             train_and_select(db)
             predict_all(db)
         elif not db.query(Prediction).filter(Prediction.vigente.is_(True)).first():
             predict_all(db)
+    except Exception:
+        logging.getLogger("exellenti").exception("El modelo no se entrenó; el ingreso sigue disponible")
     finally:
         db.close()

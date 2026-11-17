@@ -206,6 +206,7 @@ def _candidates():
 
 def train_and_select(db: Session) -> ModelRun:
     from sklearn.base import clone
+    from sklearn.metrics import f1_score, recall_score
     from sklearn.model_selection import StratifiedKFold
 
     rows = collect_rows(db, labeled_only=True)
