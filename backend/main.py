@@ -45,15 +45,30 @@ app.include_router(router)
 
 _startup_error = ""
 
+_DB_HELP = {
+    "internal": (
+        "Vercel tiene la dirección interna de Railway. "
+        "En DATABASE_URL pegue DATABASE_PUBLIC_URL, la que usa tramway.proxy.rlwy.net."
+    ),
+    "auth": (
+        "Postgres rechazó la contraseña. En Railway pulse el icono de copiar de "
+        "DATABASE_PUBLIC_URL, no seleccione el texto con el mouse: está partido en dos líneas. "
+        "Pegue ese valor en Vercel y vuelva a desplegar."
+    ),
+    "db": (
+        "No se pudo conectar. En Vercel, DATABASE_URL debe ser el valor completo de "
+        "DATABASE_PUBLIC_URL."
+    ),
+}
+
 
 @app.middleware("http")
 async def db_guard(request: Request, call_next):
     if _startup_error and request.url.path not in {"/health", "/favicon.ico"}:
         return HTMLResponse(
-            "<h1>No se pudo abrir la base</h1>"
-            "<p>En Railway, el servicio web tiene que tener la variable DATABASE_URL "
-            "que entrega Postgres (la interna). En Vercel, DATABASE_URL tiene que ser "
-            "la dirección pública, no la que termina en railway.internal.</p>",
+            "<h1>No se pudo abrir la base</h1><p>"
+            + _DB_HELP.get(_startup_error, _DB_HELP["db"])
+            + "</p>",
             status_code=503,
         )
     return await call_next(request)
@@ -84,9 +99,15 @@ def startup() -> None:
     try:
         _startup()
         _startup_error = ""
-    except Exception:
+    except Exception as exc:
         logging.getLogger("exellenti").exception("La base no quedó lista")
-        _startup_error = "db"
+        text = str(exc).lower()
+        if "railway.internal" in DATABASE_URL:
+            _startup_error = "internal"
+        elif "password authentication failed" in text:
+            _startup_error = "auth"
+        else:
+            _startup_error = "db"
 
 
 def _startup() -> None:

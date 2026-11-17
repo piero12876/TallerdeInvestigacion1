@@ -29,7 +29,12 @@ def normalize_database_url(raw: str) -> str:
     """Railway entrega postgres://. SQLAlchemy usa psycopg 3.
 
     La URL interna (postgres.railway.internal) no lleva SSL. La pública sí.
+    El panel de Railway parte el valor en dos líneas; un salto al copiar
+    deja la contraseña inválida.
     """
+    raw = raw.strip().strip('"').strip("'")
+    if raw.startswith("postgres"):
+        raw = "".join(raw.split())
     if raw.startswith("postgres://"):
         raw = "postgresql://" + raw[len("postgres://") :]
     if raw.startswith("postgresql://"):
