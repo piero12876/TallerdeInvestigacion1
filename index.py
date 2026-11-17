@@ -1,9 +1,9 @@
-"""Punto de entrada de Vercel. La app completa sigue siendo FastAPI."""
+"""Entrada de Vercel. Cada ruta llega a FastAPI con su dirección original."""
 
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
