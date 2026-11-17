@@ -3,13 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Sistema de alerta de deserción de la IE Exellenti, El Tambo. Matrícula, asistencia, seguimiento y predicción.">
+  <meta name="theme-color" content="#14303a">
   <title>{% block title %}Exellenti{% endblock %}</title>
-  <link rel="stylesheet" href="/static/css/app.css">
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/css/app.css?v=2">
 </head>
 <body>
 <div class="layout">
-  <aside class="side">
-    <div class="brand">IE Exellenti · El Tambo<strong>Alerta de deserción</strong></div>
+  <aside class="side" id="side-nav">
+    <div class="side-head">
+      <div class="brand">IE Exellenti · El Tambo<strong>Alerta de deserción</strong></div>
+      <button type="button" class="menu-btn" aria-expanded="false" aria-controls="side-nav">Menú</button>
+    </div>
     <nav class="nav">
       {% for group in nav %}
         {% if group.group %}<div class="nav-g">{{ group.group }}</div>{% endif %}
@@ -31,7 +37,7 @@
     {% block content %}{% endblock %}
   </main>
 </div>
-<script src="/static/js/app.js"></script>
-<script src="/static/js/charts.js"></script>
+<script src="/static/js/app.js?v=2"></script>
+<script src="/static/js/charts.js?v=2"></script>
 </body>
 </html>

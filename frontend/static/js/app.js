@@ -1,4 +1,21 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const menuBtn = document.querySelector(".menu-btn");
+  const side = document.querySelector(".side");
+  if (menuBtn && side) {
+    menuBtn.addEventListener("click", () => {
+      const open = side.classList.toggle("is-open");
+      menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    side.querySelectorAll(".nav a").forEach((link) => {
+      link.addEventListener("click", () => {
+        if (window.matchMedia("(max-width: 860px)").matches) {
+          side.classList.remove("is-open");
+          menuBtn.setAttribute("aria-expanded", "false");
+        }
+      });
+    });
+  }
+
   const path = location.pathname;
   document.querySelectorAll(".nav a").forEach((a) => {
     if (a.getAttribute("href") === path || (path !== "/" && a.getAttribute("href") !== "/" && path.startsWith(a.getAttribute("href")))) {
@@ -84,10 +101,18 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       const btn = form.querySelector("button[type=submit]");
-      if (btn && !btn.disabled) {
-        btn.dataset.label = btn.textContent;
-        btn.disabled = true;
-        btn.textContent = "Guardando…";
+      if (btn && btn.dataset.busy === "1") {
+        ev.preventDefault();
+        return;
+      }
+      if (btn) {
+        btn.dataset.busy = "1";
+        const label = btn.textContent;
+        setTimeout(() => {
+          btn.disabled = true;
+          btn.textContent = "Guardando…";
+          btn.dataset.label = label;
+        }, 0);
       }
     });
   });
