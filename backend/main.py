@@ -13,11 +13,20 @@ from backend.config import (
     HTTPS_ONLY,
     MODEL_PATH,
     ON_RAILWAY,
+    ON_VERCEL,
     SECRET_KEY,
     SKIP_ML,
 )
 from backend.domain.validate import safe_next
-from backend.infrastructure.database import ModelRun, Prediction, SessionLocal, init_db, reset_if_stale
+from backend.infrastructure.database import (
+    Base,
+    ModelRun,
+    Prediction,
+    SessionLocal,
+    init_db,
+    ping_db,
+    reset_if_stale,
+)
 from ml.engine import predict_all, train_and_select
 from backend.infrastructure.seed import seed_if_empty
 from backend.presentation.web import router
@@ -37,7 +46,8 @@ app.include_router(router)
 
 @app.get("/health")
 def health():
-    return {"ok": True}
+    ping_db()
+    return {"ok": True, "db": "up"}
 
 
 @app.exception_handler(RequestValidationError)
@@ -53,13 +63,18 @@ async def invalid_form(request: Request, _exc: RequestValidationError):
 
 @app.on_event("startup")
 def startup() -> None:
-    if ON_RAILWAY and DATABASE_URL.startswith("sqlite"):
+    if (ON_RAILWAY or ON_VERCEL) and DATABASE_URL.startswith("sqlite"):
         logging.getLogger("exellenti").warning(
-            "Railway está usando SQLite. Esos datos se pierden en cada deploy. "
-            "Agregue PostgreSQL en el mismo proyecto para que exista DATABASE_URL."
+            "La base es SQLite en un disco temporal. En Railway agregue PostgreSQL "
+            "para que exista DATABASE_URL. En Vercel los datos no sobreviven al reinicio."
         )
     reset_if_stale()
     init_db()
+    logging.getLogger("exellenti").info(
+        "Tablas listas (%s): %s",
+        "sqlite" if DATABASE_URL.startswith("sqlite") else "postgresql",
+        ", ".join(sorted(Base.metadata.tables)),
+    )
     db = SessionLocal()
     try:
         seed_if_empty(db)

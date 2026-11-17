@@ -14,10 +14,11 @@ from sqlalchemy import (
     UniqueConstraint,
     create_engine,
 )
-from sqlalchemy import event
+from sqlalchemy import event, inspect, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, sessionmaker
+from sqlalchemy.pool import NullPool
 
-from backend.config import DATABASE_URL, SCHEMA_VERSION
+from backend.config import DATABASE_URL, ON_VERCEL, SCHEMA_VERSION
 
 
 class Base(DeclarativeBase):
@@ -25,8 +26,28 @@ class Base(DeclarativeBase):
 
 
 _IS_SQLITE = DATABASE_URL.startswith("sqlite")
-connect_args = {"check_same_thread": False} if _IS_SQLITE else {}
-engine = create_engine(DATABASE_URL, connect_args=connect_args, pool_pre_ping=True)
+if _IS_SQLITE:
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        pool_pre_ping=True,
+    )
+elif ON_VERCEL:
+    engine = create_engine(
+        DATABASE_URL,
+        poolclass=NullPool,
+        pool_pre_ping=True,
+        connect_args={"connect_timeout": 10},
+    )
+else:
+    engine = create_engine(
+        DATABASE_URL,
+        pool_pre_ping=True,
+        pool_size=5,
+        max_overflow=2,
+        pool_recycle=280,
+        connect_args={"connect_timeout": 10},
+    )
 SessionLocal = sessionmaker(bind=engine, autoflush=True, autocommit=False)
 
 
@@ -320,7 +341,33 @@ def reset_if_stale() -> None:
 
 
 def init_db() -> None:
+    """Crea todas las tablas. En PostgreSQL agrega columnas nuevas sin borrar datos."""
     Base.metadata.create_all(bind=engine)
+    if _IS_SQLITE:
+        return
+    existing_tables = set(inspect(engine).get_table_names())
+    statements: list[str] = []
+    for table in Base.metadata.sorted_tables:
+        if table.name not in existing_tables:
+            continue
+        present = {col["name"] for col in inspect(engine).get_columns(table.name)}
+        for col in table.columns:
+            if col.name in present:
+                continue
+            sql_type = col.type.compile(dialect=engine.dialect)
+            statements.append(
+                f'ALTER TABLE "{table.name}" ADD COLUMN IF NOT EXISTS "{col.name}" {sql_type}'
+            )
+    if not statements:
+        return
+    with engine.begin() as conn:
+        for statement in statements:
+            conn.execute(text(statement))
+
+
+def ping_db() -> None:
+    with engine.connect() as conn:
+        conn.execute(text("SELECT 1"))
 
 
 def get_db():
