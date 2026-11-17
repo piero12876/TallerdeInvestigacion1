@@ -87,7 +87,7 @@
 {% elif user.role == 'estudiante' and student %}
 <div class="mods">
   <a class="mod" href="/mi-ficha"><span class="k">Mi ficha</span><strong>{{ student.codigo }}</strong><span>Tutor: {{ tutor }}</span></a>
-  <a class="mod" href="/mi-boleta"><span class="k">Mi boleta</span><strong>{{ progress.prom_b2 if progress else '—' }}</strong><span>Notas y docente de cada área</span></a>
+  <a class="mod" href="/mi-boleta"><span class="k">Mi boleta</span><strong>{{ progress.promedio if progress else '—' }}</strong><span>Promedio de los cuatro bimestres</span></a>
   <a class="mod" href="/mi-asistencia"><span class="k">Mi asistencia</span><strong>{{ progress.asistencia_bars[0].value if progress and progress.asistencia_bars else 0 }}</strong><span>Días presente registrados</span></a>
   {% if pred %}
   <a class="mod" href="/mi-ficha"><span class="k">Mi atención</span><strong>{{ pred.nivel_riesgo }}</strong><span>Prioridad {{ pred.prioridad }} · {{ '%.0f'|format(pred.probabilidad * 100) }}%</span></a>
@@ -101,7 +101,7 @@
   <div class="card">
     <h3 style="margin:0 0 10px">Evolución de mis notas</h3>
     <div data-bars='{{ progress.evo_bars | tojson }}'></div>
-    <p class="muted">Bimestre 1: {{ progress.prom_b1 }} · bimestre 2: {{ progress.prom_b2 }} · cambio {{ progress.delta }}</p>
+    <p class="muted">Bim. 1: {{ progress.prom_b1 }} · bim. 2: {{ progress.prom_b2 }} · bim. 3: {{ progress.prom_b3 }} · bim. 4: {{ progress.prom_b4 }} · cambio {{ progress.delta }}</p>
   </div>
   <div class="card">
     <h3 style="margin:0 0 10px">Docentes de mi salón</h3>

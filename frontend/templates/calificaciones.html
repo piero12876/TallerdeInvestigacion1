@@ -4,7 +4,7 @@
 <div class="top">
   <div>
     <h1>Evaluación</h1>
-    <p class="sub">Registro vigesimal por área y bimestre, y evolución temporal del salón (bimestre 1 frente a bimestre 2).{% if students %} · {{ missing }} ficha(s) con nota vacía.{% endif %}</p>
+    <p class="sub">Registro vigesimal por área en los cuatro bimestres.{% if students %} · {{ missing }} ficha(s) con alguna nota vacía.{% endif %}</p>
   </div>
 </div>
 <form class="row" method="get">
@@ -44,7 +44,7 @@
   </div>
   <div class="card">
     <h3 style="margin:0 0 10px">Lectura</h3>
-    <p>Promedio bim. 1: <b>{{ evo.prom_b1 }}</b> · bim. 2: <b>{{ evo.prom_b2 }}</b> · cambio {{ evo.delta }}</p>
+    <p>Bim. 1: <b>{{ evo.prom_b1 }}</b> · bim. 2: <b>{{ evo.prom_b2 }}</b> · bim. 3: <b>{{ evo.prom_b3 }}</b> · bim. 4: <b>{{ evo.prom_b4 }}</b> · cambio {{ evo.delta }}</p>
     <p class="muted">{{ evo.suben }} estudiantes suben ≥ 1 punto · {{ evo.bajan }} bajan ≥ 1 punto.</p>
   </div>
 </div>
@@ -56,16 +56,18 @@
   <div class="card table-wrap">
     <input data-row-filter="#tabla-notas" placeholder="Filtrar estudiante en esta lista" style="margin-bottom:10px;width:100%;max-width:320px">
     <table id="tabla-notas">
-      <thead><tr><th>Estudiante</th><th>Bimestre 1</th><th>Bimestre 2</th><th>Cambio</th></tr></thead>
+      <thead><tr><th>Estudiante</th><th>Bimestre 1</th><th>Bimestre 2</th><th>Bimestre 3</th><th>Bimestre 4</th><th>Cambio</th></tr></thead>
       <tbody>
       {% for s in students %}
-        {% set n1 = table.get((s.id, 1)) %}
-        {% set n2 = table.get((s.id, 2)) %}
-        <tr {% if n1 is none or n2 is none %}class="row-warn"{% elif (n2 - n1) <= -1 %}class="row-warn"{% endif %}>
+        {% set notes = [table.get((s.id, 1)), table.get((s.id, 2)), table.get((s.id, 3)), table.get((s.id, 4))] %}
+        {% set known = notes | select('ne', none) | list %}
+        <tr {% if known | length < 4 or (known | length >= 2 and (known[-1] - known[0]) <= -1) %}class="row-warn"{% endif %}>
           <td>{{ s.full_name }}</td>
-          <td><input name="n_{{ s.id }}_1" type="number" min="0" max="20" step="0.1" inputmode="decimal" data-grade title="Solo números de 0 a 20." value="{{ n1 if n1 is not none else '' }}" {% if not can_edit %}disabled{% endif %}></td>
-          <td><input name="n_{{ s.id }}_2" type="number" min="0" max="20" step="0.1" inputmode="decimal" data-grade title="Solo números de 0 a 20." value="{{ n2 if n2 is not none else '' }}" {% if not can_edit %}disabled{% endif %}></td>
-          <td>{% if n1 is not none and n2 is not none %}{{ '%.1f'|format(n2 - n1) }}{% else %}—{% endif %}</td>
+          {% for bim in [1, 2, 3, 4] %}
+            {% set nota = notes[bim - 1] %}
+            <td><input name="n_{{ s.id }}_{{ bim }}" type="number" min="0" max="20" step="0.1" inputmode="decimal" data-grade title="Solo números de 0 a 20." value="{{ nota if nota is not none else '' }}" {% if not can_edit %}disabled{% endif %}></td>
+          {% endfor %}
+          <td>{% if known | length >= 2 %}{{ '%.1f'|format(known[-1] - known[0]) }}{% else %}—{% endif %}</td>
         </tr>
       {% endfor %}
       </tbody>

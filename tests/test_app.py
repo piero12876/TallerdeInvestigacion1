@@ -147,6 +147,8 @@ def test_grades_persist(client):
             "curso": str(course.id),
             f"n_{student.id}_1": "15.5",
             f"n_{student.id}_2": "16.0",
+            f"n_{student.id}_3": "14.5",
+            f"n_{student.id}_4": "17.0",
         },
         follow_redirects=True,
     )
@@ -160,6 +162,14 @@ def test_grades_persist(client):
     )
     assert record is not None
     assert record.nota == 15.5
+    fourth = (
+        db.query(GradeRecord)
+        .filter_by(student_id=student.id, course_id=course.id, bimestre=4)
+        .first()
+    )
+    assert fourth is not None
+    assert fourth.nota == 17.0
+    assert "Bimestre 4" in response.text
     db.close()
 
 

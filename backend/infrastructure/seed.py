@@ -502,10 +502,12 @@ def _fill_academic(db: Session, student: Student, courses: list[Course], *, prof
         drift = rng.uniform(-0.2, 1.3)
 
     for course in courses:
-        n1 = min(20, max(5, rng.gauss(base, spread)))
-        n2 = min(20, max(5, n1 + drift))
-        db.add(GradeRecord(student_id=student.id, course_id=course.id, bimestre=1, nota=round(n1, 1)))
-        db.add(GradeRecord(student_id=student.id, course_id=course.id, bimestre=2, nota=round(n2, 1)))
+        nota = min(20, max(5, rng.gauss(base, spread)))
+        step = drift / 3
+        for bim in (1, 2, 3, 4):
+            if bim > 1:
+                nota = min(20, max(0, nota + step))
+            db.add(GradeRecord(student_id=student.id, course_id=course.id, bimestre=bim, nota=round(nota, 1)))
 
     start = date(ANIO_LECTIVO, 3, 10)
     added = 0
@@ -524,3 +526,26 @@ def _fill_academic(db: Session, student: Student, courses: list[Course], *, prof
             db.add(AttendanceRecord(student_id=student.id, fecha=cursor, estado=estado))
             added += 1
         cursor += timedelta(days=1)
+
+
+def fill_missing_bimesters(db: Session) -> int:
+    """Completa bimestres 3 y 4 en bases que solo tenían el primero y el segundo."""
+    rows = db.query(GradeRecord).all()
+    grouped: dict[tuple[int, int], dict[int, float]] = {}
+    for rec in rows:
+        grouped.setdefault((rec.student_id, rec.course_id), {})[rec.bimestre] = rec.nota
+    added = 0
+    for (student_id, course_id), notes in grouped.items():
+        last = None
+        for bim in (1, 2, 3, 4):
+            if bim in notes:
+                last = notes[bim]
+                continue
+            if last is None:
+                continue
+            db.add(GradeRecord(student_id=student_id, course_id=course_id, bimestre=bim, nota=last))
+            notes[bim] = last
+            added += 1
+    if added:
+        db.commit()
+    return added

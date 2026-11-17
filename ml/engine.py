@@ -26,7 +26,7 @@ FEATURE_LABELS = {
     "promedio": "Promedio académico",
     "nota_minima": "Nota mínima",
     "cursos_desaprobados": "Áreas desaprobadas",
-    "tendencia": "Tendencia bim. 2 − bim. 1",
+    "tendencia": "Tendencia bim. 4 − bim. 1",
     "asistencia_pct": "Asistencia (%)",
     "faltas": "Faltas no justificadas",
     "tardanzas": "Tardanzas",
@@ -54,9 +54,10 @@ def _student_features(student: Student) -> list[float]:
             by_course.setdefault(r.course_id, []).append(r.nota)
             by_bim.setdefault(r.bimestre, []).append(r.nota)
         desaprobados = sum(1 for vals in by_course.values() if np.mean(vals) < 11)
-        b1 = float(np.mean(by_bim.get(1, [promedio])))
-        b2 = float(np.mean(by_bim.get(2, [promedio])))
-        tendencia = b2 - b1
+        ordered = [float(np.mean(by_bim[bim])) for bim in (1, 2, 3, 4) if bim in by_bim]
+        if not ordered:
+            ordered = [promedio]
+        tendencia = ordered[-1] - ordered[0]
     else:
         promedio = 12.0
         nota_minima = 12.0

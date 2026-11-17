@@ -28,7 +28,7 @@ from backend.infrastructure.database import (
     reset_if_stale,
 )
 from ml.engine import predict_all, train_and_select
-from backend.infrastructure.seed import seed_if_empty
+from backend.infrastructure.seed import fill_missing_bimesters, seed_if_empty
 from backend.presentation.web import router
 
 app = FastAPI(title="IE Exellenti — Riesgo de deserción")
@@ -126,6 +126,7 @@ def _startup() -> None:
     db = SessionLocal()
     try:
         seed_if_empty(db)
+        fill_missing_bimesters(db)
     finally:
         db.close()
     if SKIP_ML or ON_VERCEL:

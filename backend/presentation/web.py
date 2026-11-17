@@ -1372,7 +1372,7 @@ def grades_page(request: Request, grado: int = 0, curso: int = 0, q: str = "", d
     missing = sum(
         1
         for s in students
-        if table.get((s.id, 1)) is None or table.get((s.id, 2)) is None
+        if any(table.get((s.id, bim)) is None for bim in (1, 2, 3, 4))
     )
     return templates.TemplateResponse(
         "calificaciones.html",
@@ -1416,7 +1416,7 @@ async def grades_save(request: Request, db: Session = Depends(db_session)):
     students = _activos(visible_students_query(db, user)).filter(Student.grade_id == grado).all()
     omitted = 0
     for student in students:
-        for bim in (1, 2):
+        for bim in (1, 2, 3, 4):
             raw = form.get(f"n_{student.id}_{bim}")
             if raw in (None, ""):
                 continue
@@ -1807,7 +1807,7 @@ def reports_export(request: Request, tipo: str = "priorizados", grado: int = 0, 
 
 def _report_headers(tipo: str) -> list[str]:
     if tipo == "rendimiento":
-        return ["codigo", "estudiante", "salon", "bimestre_1", "bimestre_2", "promedio", "tendencia"]
+        return ["codigo", "estudiante", "salon", "bimestre_1", "bimestre_2", "bimestre_3", "bimestre_4", "promedio", "tendencia"]
     if tipo == "asistencia":
         return ["codigo", "estudiante", "salon", "pct_asistencia", "faltas", "tardanzas", "racha", "patron"]
     if tipo == "padron":
@@ -1841,18 +1841,22 @@ def _report_rows(db: Session, user: User, tipo: str, grado: int, estado: str = "
         rows = []
         for student in students:
             bims = by_st.get(student.id, {})
-            n1 = round(sum(bims.get(1, [0])) / len(bims.get(1, [1])), 1) if bims.get(1) else ""
-            n2 = round(sum(bims.get(2, [0])) / len(bims.get(2, [1])), 1) if bims.get(2) else ""
-            nums = [v for v in (n1, n2) if v != ""]
+            notes = []
+            for bim in (1, 2, 3, 4):
+                vals = bims.get(bim)
+                notes.append(round(sum(vals) / len(vals), 1) if vals else "")
+            nums = [v for v in notes if v != ""]
             prom = round(sum(nums) / len(nums), 1) if nums else ""
-            tend = round(n2 - n1, 1) if n1 != "" and n2 != "" else ""
+            tend = round(nums[-1] - nums[0], 1) if len(nums) >= 2 else ""
             rows.append(
                 {
                     "codigo": student.codigo,
                     "estudiante": student.full_name,
                     "salon": student.grade.nombre if student.grade else "",
-                    "bimestre_1": n1,
-                    "bimestre_2": n2,
+                    "bimestre_1": notes[0],
+                    "bimestre_2": notes[1],
+                    "bimestre_3": notes[2],
+                    "bimestre_4": notes[3],
                     "promedio": prom,
                     "tendencia": tend,
                 }

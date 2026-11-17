@@ -229,35 +229,36 @@ def teacher_panel(db: Session, assignments: list, students: list[Student], preds
     }
 
 
+BIMESTRES = (1, 2, 3, 4)
+_BIM_COLORS = ("#1e3a5f", "#3d6a9a", "#8aa0bf", "#c4a15a")
+
+
 def academic_evolution(table: dict, students: list[Student]) -> dict:
-    b1 = [table.get((s.id, 1)) for s in students if table.get((s.id, 1)) is not None]
-    b2 = [table.get((s.id, 2)) for s in students if table.get((s.id, 2)) is not None]
-    avg1 = round(sum(b1) / len(b1), 1) if b1 else 0
-    avg2 = round(sum(b2) / len(b2), 1) if b2 else 0
+    avgs: list[float | None] = []
+    for bim in BIMESTRES:
+        vals = [table.get((s.id, bim)) for s in students if table.get((s.id, bim)) is not None]
+        avgs.append(round(sum(vals) / len(vals), 1) if vals else None)
+    present = [value for value in avgs if value is not None]
     deltas = []
     for student in students:
-        n1, n2 = table.get((student.id, 1)), table.get((student.id, 2))
-        if n1 is None or n2 is None:
+        known = [table.get((student.id, bim)) for bim in BIMESTRES]
+        known = [note for note in known if note is not None]
+        if len(known) < 2:
             continue
-        delta = round(n2 - n1, 1)
-        deltas.append(
-            {
-                "nombre": student.full_name,
-                "b1": n1,
-                "b2": n2,
-                "delta": delta,
-                "baja": delta <= -1,
-            }
-        )
+        delta = round(known[-1] - known[0], 1)
+        deltas.append({"nombre": student.full_name, "delta": delta, "baja": delta <= -1})
     return {
-        "prom_b1": avg1,
-        "prom_b2": avg2,
-        "delta": round(avg2 - avg1, 1) if b1 and b2 else 0,
+        "promedios": [value if value is not None else 0 for value in avgs],
+        "prom_b1": avgs[0] or 0,
+        "prom_b2": avgs[1] or 0,
+        "prom_b3": avgs[2] or 0,
+        "prom_b4": avgs[3] or 0,
+        "delta": round(present[-1] - present[0], 1) if len(present) >= 2 else 0,
         "bajan": sum(1 for row in deltas if row["baja"]),
         "suben": sum(1 for row in deltas if row["delta"] >= 1),
         "bars": [
-            {"label": "Bimestre 1", "value": avg1, "color": "#1b6b93"},
-            {"label": "Bimestre 2", "value": avg2, "color": "#1f4454"},
+            {"label": f"Bimestre {bim}", "value": avgs[i] or 0, "color": _BIM_COLORS[i]}
+            for i, bim in enumerate(BIMESTRES)
         ],
         "deltas": deltas,
     }
@@ -382,17 +383,16 @@ def student_progress(student: Student) -> dict:
         by_course.setdefault(name, {})[rec.bimestre] = rec.nota
     filas = []
     bien, mal, proceso = [], [], []
-    b1_all, b2_all = [], []
+    by_bim: dict[int, list[float]] = {bim: [] for bim in BIMESTRES}
     for name, bims in sorted(by_course.items()):
-        vals = [bims[k] for k in sorted(bims)]
+        vals = [bims[k] for k in sorted(bims) if k in BIMESTRES]
         avg = round(sum(vals) / len(vals), 1) if vals else 0
         nivel = achievement(avg)
-        n1, n2 = bims.get(1), bims.get(2)
-        if n1 is not None:
-            b1_all.append(n1)
-        if n2 is not None:
-            b2_all.append(n2)
-        filas.append({"area": name, "promedio": avg, "logro": nivel, "b1": n1, "b2": n2})
+        notas = {bim: bims.get(bim) for bim in BIMESTRES}
+        for bim in BIMESTRES:
+            if notas[bim] is not None:
+                by_bim[bim].append(notas[bim])
+        filas.append({"area": name, "promedio": avg, "logro": nivel, **{f"b{bim}": notas[bim] for bim in BIMESTRES}})
         if nivel in {"AD", "A"}:
             bien.append(name)
         elif nivel == "B":
@@ -403,20 +403,26 @@ def student_progress(student: Student) -> dict:
     falta = sum(1 for a in att if a.estado == "falta")
     tardanza = sum(1 for a in att if a.estado == "tardanza")
     just = sum(1 for a in att if a.estado == "justificada")
-    avg1 = round(sum(b1_all) / len(b1_all), 1) if b1_all else 0
-    avg2 = round(sum(b2_all) / len(b2_all), 1) if b2_all else 0
+    proms = [
+        round(sum(by_bim[bim]) / len(by_bim[bim]), 1) if by_bim[bim] else 0
+        for bim in BIMESTRES
+    ]
+    present = [value for bim in BIMESTRES if by_bim[bim] for value in [proms[bim - 1]]]
     return {
         "filas": filas,
         "bien": bien,
         "mal": mal,
         "proceso": proceso,
-        "prom_b1": avg1,
-        "prom_b2": avg2,
-        "delta": round(avg2 - avg1, 1) if b1_all and b2_all else 0,
-        "notas_bars": [{"label": f["area"][:10], "value": f["promedio"], "color": "#1f4454"} for f in filas],
+        "prom_b1": proms[0],
+        "prom_b2": proms[1],
+        "prom_b3": proms[2],
+        "prom_b4": proms[3],
+        "promedio": round(sum(row["promedio"] for row in filas) / len(filas), 1) if filas else 0,
+        "delta": round(present[-1] - present[0], 1) if len(present) >= 2 else 0,
+        "notas_bars": [{"label": f["area"][:10], "value": f["promedio"], "color": "#1e3a5f"} for f in filas],
         "evo_bars": [
-            {"label": "Bimestre 1", "value": avg1, "color": "#1b6b93"},
-            {"label": "Bimestre 2", "value": avg2, "color": "#1f4454"},
+            {"label": f"Bimestre {bim}", "value": proms[i], "color": _BIM_COLORS[i]}
+            for i, bim in enumerate(BIMESTRES)
         ],
         "asistencia_bars": [
             {"label": "Presente", "value": presente, "color": "#1f7a4d"},
