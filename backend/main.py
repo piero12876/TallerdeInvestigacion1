@@ -1,4 +1,5 @@
 import logging
+import threading
 from urllib.parse import urlparse
 
 from fastapi import FastAPI, Request
@@ -16,6 +17,7 @@ from backend.config import (
     ON_VERCEL,
     SECRET_KEY,
     SKIP_ML,
+    TESTING,
 )
 from backend.domain.validate import safe_next
 from backend.infrastructure.database import (
@@ -131,6 +133,13 @@ def _startup() -> None:
         db.close()
     if SKIP_ML or ON_VERCEL:
         return
+    if TESTING:
+        _train_if_needed()
+        return
+    threading.Thread(target=_train_if_needed, name="exellenti-modelo", daemon=True).start()
+
+
+def _train_if_needed() -> None:
     db = SessionLocal()
     try:
         has_model = db.query(ModelRun).filter(ModelRun.selected.is_(True)).first()
