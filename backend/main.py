@@ -81,8 +81,10 @@ def startup() -> None:
         if SKIP_ML:
             return
         has_model = db.query(ModelRun).filter(ModelRun.selected.is_(True)).first()
-        # El archivo del modelo no viaja en git y el disco de Railway se vacía
-        # en cada deploy. Si falta, se vuelve a entrenar con los datos de la base.
+        # En Vercel el archivo del modelo no se conserva y reentrenar pasa el
+        # límite de la función. Si PostgreSQL ya tiene el modelo, se usa ese.
+        if ON_VERCEL and has_model:
+            return
         if not has_model or not MODEL_PATH.exists():
             train_and_select(db)
             predict_all(db)
