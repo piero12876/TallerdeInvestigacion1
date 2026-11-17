@@ -4,23 +4,6 @@ from dataclasses import dataclass
 
 import joblib
 import numpy as np
-from sklearn.base import clone
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (
-    accuracy_score,
-    average_precision_score,
-    confusion_matrix,
-    f1_score,
-    precision_score,
-    recall_score,
-    roc_auc_score,
-)
-from sklearn.model_selection import StratifiedKFold
-from sklearn.naive_bayes import GaussianNB
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
 from sqlalchemy.orm import Session, joinedload
 
 from backend.config import MODEL_PATH
@@ -128,6 +111,16 @@ def collect_rows(db: Session, labeled_only: bool = False) -> list[FeatureRow]:
 
 
 def _metrics(y_true, y_pred, y_proba) -> dict:
+    from sklearn.metrics import (
+        accuracy_score,
+        average_precision_score,
+        confusion_matrix,
+        f1_score,
+        precision_score,
+        recall_score,
+        roc_auc_score,
+    )
+
     cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
     vn, fp, fn, vp = (int(x) for x in cm.ravel())
     auc = 0.0
@@ -169,6 +162,13 @@ def _oversample_minority(X: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, np.n
 
 
 def _candidates():
+    from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.naive_bayes import GaussianNB
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.svm import SVC
+
     return {
         "Regresión logística": Pipeline(
             [
@@ -205,6 +205,9 @@ def _candidates():
 
 
 def train_and_select(db: Session) -> ModelRun:
+    from sklearn.base import clone
+    from sklearn.model_selection import StratifiedKFold
+
     rows = collect_rows(db, labeled_only=True)
     if len(rows) < 20:
         raise RuntimeError("No hay suficientes registros históricos etiquetados para entrenar.")
@@ -285,6 +288,13 @@ def train_and_select(db: Session) -> ModelRun:
 def _load_model():
     if not MODEL_PATH.exists():
         return None
+    import sklearn.ensemble  # noqa: F401
+    import sklearn.linear_model  # noqa: F401
+    import sklearn.naive_bayes  # noqa: F401
+    import sklearn.pipeline  # noqa: F401
+    import sklearn.preprocessing  # noqa: F401
+    import sklearn.svm  # noqa: F401
+
     return joblib.load(MODEL_PATH)
 
 

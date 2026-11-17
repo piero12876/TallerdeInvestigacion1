@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -43,9 +43,25 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR / "static")), name="static")
 app.include_router(router)
 
+_startup_error = ""
+
+
+@app.middleware("http")
+async def db_guard(request: Request, call_next):
+    if _startup_error and request.url.path not in {"/health", "/favicon.ico"}:
+        return HTMLResponse(
+            "<h1>No se pudo abrir la base</h1>"
+            "<p>Revise que DATABASE_URL sea la dirección pública de PostgreSQL "
+            "y que EXELLENTI_SECRET esté definida.</p>",
+            status_code=503,
+        )
+    return await call_next(request)
+
 
 @app.get("/health")
 def health():
+    if _startup_error:
+        return JSONResponse({"ok": False, "db": "down"}, status_code=503)
     ping_db()
     return {"ok": True, "db": "up"}
 
@@ -63,6 +79,16 @@ async def invalid_form(request: Request, _exc: RequestValidationError):
 
 @app.on_event("startup")
 def startup() -> None:
+    global _startup_error
+    try:
+        _startup()
+        _startup_error = ""
+    except Exception:
+        logging.getLogger("exellenti").exception("La base no quedó lista")
+        _startup_error = "db"
+
+
+def _startup() -> None:
     if (ON_RAILWAY or ON_VERCEL) and DATABASE_URL.startswith("sqlite"):
         logging.getLogger("exellenti").warning(
             "La base es SQLite en un disco temporal. En Railway agregue PostgreSQL "
@@ -78,13 +104,9 @@ def startup() -> None:
     db = SessionLocal()
     try:
         seed_if_empty(db)
-        if SKIP_ML:
+        if SKIP_ML or ON_VERCEL:
             return
         has_model = db.query(ModelRun).filter(ModelRun.selected.is_(True)).first()
-        # En Vercel el archivo del modelo no se conserva y reentrenar pasa el
-        # límite de la función. Si PostgreSQL ya tiene el modelo, se usa ese.
-        if ON_VERCEL and has_model:
-            return
         if not has_model or not MODEL_PATH.exists():
             train_and_select(db)
             predict_all(db)
