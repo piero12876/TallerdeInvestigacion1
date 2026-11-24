@@ -1,6 +1,6 @@
 import csv
 import io
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse, StreamingResponse
@@ -1432,7 +1432,7 @@ async def grades_save(request: Request, db: Session = Depends(db_session)):
             if rec:
                 rec.nota = nota
                 rec.registrado_por = user.id
-                rec.updated_at = datetime.utcnow()
+                rec.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
             else:
                 db.add(
                     GradeRecord(

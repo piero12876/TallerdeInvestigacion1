@@ -120,7 +120,7 @@ def _seed(db: Session) -> None:
     for account in STAFF_ACCOUNTS:
         user = User(
             username=account["username"],
-            password_hash=_pwd(account["password"]),
+            password_hash=_pwd(account["clave"]),
             full_name=account["full_name"],
             email=account.get("email", ""),
             role=account["role"],
@@ -178,10 +178,10 @@ def _seed(db: Session) -> None:
             if grade.tutor_id:
                 continue
             username = f"tutor{nivel}{seccion.lower()}"
-            password = f"Tut#{nivel}{seccion}Ex26"
+            clave = f"Tut#{nivel}{seccion}Ex26"
             name = TUTOR_NAMES[(nivel, seccion)]
             teachers[username] = _make_teacher(
-                db, username, name, password, f"Tutor {ORDINAL[nivel]} {seccion}", f"4451{nivel}{ord(seccion)}"
+                db, username, name, clave, f"Tutor {ORDINAL[nivel]} {seccion}", f"4451{nivel}{ord(seccion)}"
             )
             grade.tutor_id = teachers[username].id
     db.flush()
@@ -205,7 +205,7 @@ def _seed(db: Session) -> None:
                 if login:
                     u = User(
                         username=login["username"],
-                        password_hash=_pwd(login["password"]),
+                        password_hash=_pwd(login["clave"]),
                         full_name=_full(nombres, apellidos),
                         role=Role.ESTUDIANTE.value,
                         email=f"{login['username']}@exellenti.edu.pe",

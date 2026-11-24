@@ -9,8 +9,8 @@
 </div>
 <form class="row" method="get">
   <div>
-    <label>Salón</label>
-    <select name="grado" onchange="this.form.submit()">
+    <label for="fld-grado-59">Salón</label>
+    <select id="fld-grado-59" name="grado" onchange="this.form.submit()">
       <option value="0">Todos</option>
       {% for g in grades %}
         <option value="{{ g.id }}" {% if grado == g.id %}selected{% endif %}>{{ g.nombre }}</option>
@@ -18,8 +18,8 @@
     </select>
   </div>
   <div>
-    <label>Tipo</label>
-    <select name="tipo" onchange="this.form.submit()">
+    <label for="fld-tipo-60">Tipo</label>
+    <select id="fld-tipo-60" name="tipo" onchange="this.form.submit()">
       <option value="">Todos</option>
       {% for item, lab in [('academico','Académico'),('asistencia','Asistencia'),('familiar','Familiar'),('convivencia','Convivencia')] %}
         <option value="{{ item }}" {% if tipo == item %}selected{% endif %}>{{ lab }}</option>
@@ -27,16 +27,16 @@
     </select>
   </div>
   <div>
-    <label>Estado</label>
-    <select name="estado" onchange="this.form.submit()">
+    <label for="fld-estado-61">Estado</label>
+    <select id="fld-estado-61" name="estado" onchange="this.form.submit()">
       <option value="">Todos</option>
       <option value="abierto" {% if estado == 'abierto' %}selected{% endif %}>Abierto</option>
       <option value="cerrado" {% if estado == 'cerrado' %}selected{% endif %}>Cerrado</option>
     </select>
   </div>
   <div>
-    <label>Buscar</label>
-    <input name="q" value="{{ q }}" maxlength="80" placeholder="Estudiante, código o texto" autocomplete="off">
+    <label for="q">Buscar</label>
+    <input id="q" name="q" value="{{ q }}" maxlength="80" placeholder="Estudiante, código o texto" autocomplete="off">
   </div>
   <button class="btn sec" type="submit">Filtrar</button>
 </form>

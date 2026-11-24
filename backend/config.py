@@ -10,10 +10,11 @@ load_dotenv(ROOT_DIR / ".env")
 
 ON_RAILWAY = bool(os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("RAILWAY_PROJECT_ID"))
 ON_VERCEL = os.getenv("VERCEL") == "1" or bool(os.getenv("VERCEL_ENV"))
-# En Vercel el disco del proyecto es de solo lectura. SQLite y el modelo van a /tmp.
+# En Vercel el disco del proyecto es de solo lectura. SQLite y el modelo van al temporal del sistema.
 if ON_VERCEL:
-    DATA_DIR = Path("/tmp/exellenti/data")
-    ML_DIR = Path("/tmp/exellenti/ml")
+    _scratch = Path(os.getenv("TMPDIR") or os.getenv("TEMP") or (os.sep + "tmp"))
+    DATA_DIR = _scratch / "exellenti" / "data"
+    ML_DIR = _scratch / "exellenti" / "ml"
 else:
     DATA_DIR = ROOT_DIR / "data"
     ML_DIR = ROOT_DIR / "ml"

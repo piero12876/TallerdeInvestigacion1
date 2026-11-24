@@ -9,8 +9,8 @@
 </div>
 <form class="row" method="get">
   <div>
-    <label>Marca</label>
-    <select name="marca" onchange="this.form.submit()">
+    <label for="fld-marca-46">Marca</label>
+    <select id="fld-marca-46" name="marca" onchange="this.form.submit()">
       <option value="">Todas</option>
       {% for v, lab in [('presente','Presente'),('falta','Falta'),('tardanza','Tardanza'),('justificada','Justificada')] %}
         <option value="{{ v }}" {% if marca == v %}selected{% endif %}>{{ lab }}</option>

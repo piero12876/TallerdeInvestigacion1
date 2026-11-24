@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
 from sqlalchemy import (
     Boolean,
@@ -19,6 +19,10 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship,
 from sqlalchemy.pool import NullPool
 
 from backend.config import DATABASE_URL, ON_VERCEL, SCHEMA_VERSION
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class Base(DeclarativeBase):
@@ -71,7 +75,7 @@ class User(Base):
     phone: Mapped[str] = mapped_column(String(40), default="")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     clave_temporal: Mapped[str] = mapped_column(String(80), default="")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utc_now)
 
     teacher_profile: Mapped["TeacherProfile | None"] = relationship(back_populates="user")
     student_profile: Mapped["Student | None"] = relationship(back_populates="user")
@@ -205,7 +209,7 @@ class GradeRecord(Base):
     bimestre: Mapped[int] = mapped_column(Integer)
     nota: Mapped[float] = mapped_column(Float)
     registrado_por: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utc_now)
 
     student: Mapped[Student] = relationship(back_populates="grades")
     course: Mapped[Course] = relationship()
@@ -236,7 +240,7 @@ class TutoringAppointment(Base):
     canal: Mapped[str] = mapped_column(String(20), default="presencial")
     estado: Mapped[str] = mapped_column(String(20), default="programada", index=True)
     resultado: Mapped[str] = mapped_column(Text, default="")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utc_now)
 
     student: Mapped[Student] = relationship()
     author: Mapped[User] = relationship()
@@ -251,7 +255,7 @@ class FollowUp(Base):
     contenido: Mapped[str] = mapped_column(Text)
     tipo: Mapped[str] = mapped_column(String(20), default="academico", index=True)
     estado: Mapped[str] = mapped_column(String(20), default="abierto", index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utc_now)
 
     student: Mapped[Student] = relationship(back_populates="followups")
     author: Mapped[User] = relationship()
@@ -267,7 +271,7 @@ class Prediction(Base):
     nivel_modelo: Mapped[str] = mapped_column(String(12), default="")
     prioridad: Mapped[int] = mapped_column(Integer, default=0)
     modelo: Mapped[str] = mapped_column(String(80), default="")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utc_now)
     vigente: Mapped[bool] = mapped_column(Boolean, default=True)
 
     student: Mapped[Student] = relationship(back_populates="predictions")
@@ -295,7 +299,7 @@ class ModelRun(Base):
     cv_folds: Mapped[int] = mapped_column(Integer, default=5)
     nota: Mapped[str] = mapped_column(Text, default="")
     selected: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utc_now)
 
 
 class BacklogItem(Base):
@@ -318,7 +322,7 @@ class AuditLog(Base):
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     accion: Mapped[str] = mapped_column(String(80))
     detalle: Mapped[str] = mapped_column(Text, default="")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utc_now)
 
 
 def reset_if_stale() -> None:

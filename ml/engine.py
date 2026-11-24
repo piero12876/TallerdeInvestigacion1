@@ -151,8 +151,8 @@ def _metrics(y_true, y_pred, y_proba) -> dict:
 
 def _oversample_minority(X: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Réplica aleatoria del minoritario, solo en el fold de entrenamiento. No es SMOTE."""
-    pos = np.where(y == 1)[0]
-    neg = np.where(y == 0)[0]
+    pos = np.nonzero(y == 1)[0]
+    neg = np.nonzero(y == 0)[0]
     if len(pos) == 0 or len(neg) == 0 or len(pos) >= len(neg):
         return X, y
     extra = np.random.RandomState(42).choice(pos, size=len(neg) - len(pos), replace=True)

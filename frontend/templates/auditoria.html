@@ -9,8 +9,8 @@
 </div>
 <form class="row" method="get">
   <div>
-    <label>Acción</label>
-    <select name="accion" onchange="this.form.submit()">
+    <label for="fld-accion-5">Acción</label>
+    <select id="fld-accion-5" name="accion" onchange="this.form.submit()">
       <option value="">Todas</option>
       {% for a in acciones %}
         <option value="{{ a }}" {% if accion == a %}selected{% endif %}>{{ a }}</option>
@@ -18,13 +18,13 @@
     </select>
   </div>
   <div>
-    <label>Detalle</label>
-    <input name="q" value="{{ q }}" maxlength="80" placeholder="Buscar en el detalle">
+    <label for="q">Detalle</label>
+    <input id="q" name="q" value="{{ q }}" maxlength="80" placeholder="Buscar en el detalle">
   </div>
   <button class="btn sec" type="submit">Filtrar</button>
 </form>
 <div class="card table-wrap">
-  <input data-row-filter="#tabla-bitacora" placeholder="Filtrar en la tabla" style="margin-bottom:10px;width:100%;max-width:320px">
+  <label class="sr-only" for="fld-campo-6">Filtrar en la tabla</label><input id="fld-campo-6" data-row-filter="#tabla-bitacora" placeholder="Filtrar en la tabla" style="margin-bottom:10px;width:100%;max-width:320px">
   <table id="tabla-bitacora">
     <thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr></thead>
     <tbody>

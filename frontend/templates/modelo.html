@@ -41,6 +41,8 @@
   <div class="card">
     <h3 style="margin:0 0 10px">Métricas</h3>
     <table>
+      <thead><tr><th>Métrica</th><th>Valor</th></tr></thead>
+      <tbody>
       <tr><td>Accuracy</td><td>{{ '%.3f'|format(selected.accuracy) }}</td></tr>
       <tr><td>Precision</td><td>{{ '%.3f'|format(selected.precision) }}</td></tr>
       <tr><td>Recall</td><td>{{ '%.3f'|format(selected.recall) }}</td></tr>
@@ -48,6 +50,7 @@
       <tr><td>ROC-AUC</td><td>{{ '%.3f'|format(selected.roc_auc) }}</td></tr>
       <tr><td>PR-AUC</td><td>{{ '%.3f'|format(selected.pr_auc) }}</td></tr>
       <tr><td>Folds</td><td>{{ selected.cv_folds }}</td></tr>
+      </tbody>
     </table>
   </div>
 </div>
@@ -56,7 +59,7 @@
 <div class="card" style="margin-top:16px">
   <h3 style="margin:0 0 10px">Comparación de algoritmos</h3>
   <table>
-    <thead><tr><th>Algoritmo</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th><th>AUC</th><th>PR-AUC</th><th></th></tr></thead>
+    <thead><tr><th>Algoritmo</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th><th>AUC</th><th>PR-AUC</th><th>Estado</th></tr></thead>
     <tbody>
     {% for r in runs %}
       <tr>

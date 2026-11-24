@@ -10,8 +10,8 @@
 </div>
 <form class="row" method="get">
   <div>
-    <label>Salón</label>
-    <select name="grado" onchange="this.form.submit()">
+    <label for="fld-grado-10">Salón</label>
+    <select id="fld-grado-10" name="grado" onchange="this.form.submit()">
       <option value="0">Todos</option>
       {% for g in grades %}
         <option value="{{ g.id }}" {% if grado == g.id %}selected{% endif %}>{{ g.nombre }}</option>
@@ -19,8 +19,8 @@
     </select>
   </div>
   <div>
-    <label>Estado</label>
-    <select name="estado" onchange="this.form.submit()">
+    <label for="fld-estado-11">Estado</label>
+    <select id="fld-estado-11" name="estado" onchange="this.form.submit()">
       <option value="">Todos</option>
       <option value="programada" {% if estado == 'programada' %}selected{% endif %}>Programada</option>
       <option value="realizada" {% if estado == 'realizada' %}selected{% endif %}>Realizada</option>
@@ -29,8 +29,8 @@
     </select>
   </div>
   <div>
-    <label>Buscar</label>
-    <input name="q" value="{{ q }}" maxlength="80" placeholder="Estudiante, código o motivo" autocomplete="off">
+    <label for="q">Buscar</label>
+    <input id="q" name="q" value="{{ q }}" maxlength="80" placeholder="Estudiante, código o motivo" autocomplete="off">
   </div>
   <button class="btn sec" type="submit">Filtrar</button>
 </form>
@@ -39,8 +39,8 @@
   <form method="post" action="/citas" class="form-grid">
     {% include "_csrf.html" %}
     <div>
-      <label>Estudiante</label>
-      <select name="student_id" required>
+      <label for="fld-student-id-12">Estudiante</label>
+      <select id="fld-student-id-12" name="student_id" required>
         <option value="">Seleccione</option>
         {% for s in alumnos %}
           <option value="{{ s.id }}">{{ s.full_name }} · {{ s.grade.nombre if s.grade else 'Sin salón' }}</option>
@@ -48,20 +48,20 @@
       </select>
     </div>
     <div>
-      <label>Fecha</label>
-      <input type="date" name="fecha" required min="{{ anio }}-03-01" max="{{ anio }}-12-20">
+      <label for="fecha">Fecha</label>
+      <input id="fecha" type="date" name="fecha" required min="{{ anio }}-03-01" max="{{ anio }}-12-20">
     </div>
     <div>
-      <label>Canal</label>
-      <select name="canal">
+      <label for="fld-canal-13">Canal</label>
+      <select id="fld-canal-13" name="canal">
         <option value="presencial">Presencial</option>
         <option value="llamada">Llamada</option>
         <option value="virtual">Virtual</option>
       </select>
     </div>
     <div class="full">
-      <label>Motivo</label>
-      <input name="motivo" required minlength="8" maxlength="180" placeholder="Por qué se cita a la familia">
+      <label for="fld-motivo-14">Motivo</label>
+      <input id="fld-motivo-14" name="motivo" required minlength="8" maxlength="180" placeholder="Por qué se cita a la familia">
     </div>
     <div class="full">
       <button class="btn" type="submit">Programar</button>
@@ -69,7 +69,7 @@
   </form>
 </div>
 <div class="card table-wrap">
-  <input data-row-filter="#tabla-citas" placeholder="Filtrar en la tabla" style="margin-bottom:10px;width:100%;max-width:320px">
+  <label class="sr-only" for="fld-campo-16">Filtrar en la tabla</label><input id="fld-campo-16" data-row-filter="#tabla-citas" placeholder="Filtrar en la tabla" style="margin-bottom:10px;width:100%;max-width:320px">
   <table id="tabla-citas">
     <thead>
       <tr><th>Fecha</th><th>Estudiante</th><th>Salón</th><th>Motivo</th><th>Estado</th><th>Cierre</th></tr>
@@ -85,18 +85,18 @@
         <td>
           <form method="post" action="/citas/{{ row.id }}">
             {% include "_csrf.html" %}
-            <select name="estado" required>
+            <label class="sr-only" for="cita-estado-{{ row.id }}">Estado</label><select id="cita-estado-{{ row.id }}" name="estado" required>
               {% for item in cita_estados %}
                 <option value="{{ item }}" {% if row.estado == item %}selected{% endif %}>{{ item.replace('_', ' ') }}</option>
               {% endfor %}
             </select>
-            <input name="resultado" value="{{ row.resultado }}" maxlength="500" placeholder="Resultado si se realizó o no asistió">
-            <select name="canal">
+            <label class="sr-only" for="cita-resultado-{{ row.id }}">Resultado si se realizó o no asistió</label><input id="cita-resultado-{{ row.id }}" name="resultado" value="{{ row.resultado }}" maxlength="500" placeholder="Resultado si se realizó o no asistió">
+            <label class="sr-only" for="cita-canal-{{ row.id }}">Canal</label><select id="cita-canal-{{ row.id }}" name="canal">
               {% for item in ['presencial','llamada','virtual'] %}
                 <option value="{{ item }}" {% if row.canal == item %}selected{% endif %}>{{ item }}</option>
               {% endfor %}
             </select>
-            <label class="check-lab" style="margin-top:0"><input type="checkbox" name="abrir_seguimiento" value="1"> Abrir seguimiento al marcar realizada</label>
+            <label for="cita-seg-{{ row.id }}" class="check-lab" style="margin-top:0"><input id="cita-seg-{{ row.id }}" type="checkbox" name="abrir_seguimiento" value="1"> Abrir seguimiento al marcar realizada</label>
             <button class="btn sec" type="submit">Guardar</button>
           </form>
         </td>

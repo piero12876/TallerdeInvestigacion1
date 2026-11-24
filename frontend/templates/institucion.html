@@ -60,16 +60,19 @@
   <div class="card">
     <h3 style="margin:0 0 10px">Usuarios por rol</h3>
     <table>
+      <thead><tr><th>Rol</th><th>Usuarios</th></tr></thead>
+      <tbody>
       {% for rol, n in snap.por_rol.items() %}
         <tr><td>{{ snap.role_labels.get(rol, rol) }}</td><td>{{ n }}</td></tr>
       {% endfor %}
+      </tbody>
     </table>
   </div>
 </div>
 
 <div class="card" style="margin-top:16px">
   <h3 style="margin:0 0 10px">Salones (grado + sección)</h3>
-  <input data-row-filter="#tabla-aulas" placeholder="Filtrar salón o tutor" style="margin-bottom:10px;width:100%;max-width:320px">
+  <label class="sr-only" for="fld-campo-43">Filtrar salón o tutor</label><input id="fld-campo-43" data-row-filter="#tabla-aulas" placeholder="Filtrar salón o tutor" style="margin-bottom:10px;width:100%;max-width:320px">
   <table id="tabla-aulas">
     <thead>
       <tr><th>Salón</th><th>Tutor de aula</th><th>Matriculados</th><th>Alto</th><th>Medio</th><th>Bajo</th></tr>
@@ -91,7 +94,7 @@
 
 <div class="card" style="margin-top:16px">
   <h3 style="margin:0 0 10px">Cargas: docente → salón → curso</h3>
-  <input data-row-filter="#tabla-cargas" placeholder="Filtrar docente, salón o curso" style="margin-bottom:10px;width:100%;max-width:320px">
+  <label class="sr-only" for="fld-campo-44">Filtrar docente, salón o curso</label><input id="fld-campo-44" data-row-filter="#tabla-cargas" placeholder="Filtrar docente, salón o curso" style="margin-bottom:10px;width:100%;max-width:320px">
   <table id="tabla-cargas">
     <thead><tr><th>Docente</th><th>Salón</th><th>Curso</th><th>Rol en el aula</th></tr></thead>
     <tbody>

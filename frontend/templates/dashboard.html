@@ -107,9 +107,12 @@
     <h3 style="margin:0 0 10px">Docentes de mi salón</h3>
     <p><b>Tutor de aula:</b> {{ tutor }}</p>
     <table>
+      <thead><tr><th>Área</th><th>Docente</th></tr></thead>
+      <tbody>
       {% for d in docentes_aula %}
         <tr><td>{{ d.curso }}</td><td>{{ d.docente }}</td></tr>
       {% endfor %}
+      </tbody>
     </table>
   </div>
 </div>

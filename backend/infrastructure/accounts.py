@@ -9,7 +9,7 @@ que puede enseñar el mismo curso en varios grados y secciones.
 STAFF_ACCOUNTS = [
     {
         "username": "directora",
-        "password": "Dir#Ex26",
+        "clave": "Dir#Ex26",
         "role": "directora",
         "full_name": "Rosa Elena Huamán Cerrón",
         "email": "direccion@exellenti.edu.pe",
@@ -18,7 +18,7 @@ STAFF_ACCOUNTS = [
     },
     {
         "username": "maria.cerron",
-        "password": "Doc1#Ex26",
+        "clave": "Doc1#Ex26",
         "role": "docente",
         "full_name": "María Cerrón Poma",
         "email": "maria.cerron@exellenti.edu.pe",
@@ -29,7 +29,7 @@ STAFF_ACCOUNTS = [
     },
     {
         "username": "aula1b",
-        "password": "Aul1B#Ex26",
+        "clave": "Aul1B#Ex26",
         "role": "docente",
         "full_name": "Juana Taipe Rojas",
         "email": "aula1b@exellenti.edu.pe",
@@ -40,7 +40,7 @@ STAFF_ACCOUNTS = [
     },
     {
         "username": "aula1c",
-        "password": "Aul1C#Ex26",
+        "clave": "Aul1C#Ex26",
         "role": "docente",
         "full_name": "Milagros Soto Quispe",
         "email": "aula1c@exellenti.edu.pe",
@@ -51,7 +51,7 @@ STAFF_ACCOUNTS = [
     },
     {
         "username": "julio.palacios",
-        "password": "Doc2#Ex26",
+        "clave": "Doc2#Ex26",
         "role": "docente",
         "full_name": "Julio Palacios Taipe",
         "email": "julio.palacios@exellenti.edu.pe",
@@ -62,7 +62,7 @@ STAFF_ACCOUNTS = [
     },
     {
         "username": "aula2b",
-        "password": "Aul2B#Ex26",
+        "clave": "Aul2B#Ex26",
         "role": "docente",
         "full_name": "Henry Ñahui Poma",
         "email": "aula2b@exellenti.edu.pe",
@@ -73,7 +73,7 @@ STAFF_ACCOUNTS = [
     },
     {
         "username": "aula2c",
-        "password": "Aul2C#Ex26",
+        "clave": "Aul2C#Ex26",
         "role": "docente",
         "full_name": "Karina Flores Aliaga",
         "email": "aula2c@exellenti.edu.pe",
@@ -84,7 +84,7 @@ STAFF_ACCOUNTS = [
     },
     {
         "username": "ana.delacruz",
-        "password": "Doc3#Ex26",
+        "clave": "Doc3#Ex26",
         "role": "docente",
         "full_name": "Ana De la Cruz Rojas",
         "email": "ana.delacruz@exellenti.edu.pe",
@@ -95,7 +95,7 @@ STAFF_ACCOUNTS = [
     },
     {
         "username": "carlos.meza",
-        "password": "Doc4#Ex26",
+        "clave": "Doc4#Ex26",
         "role": "docente",
         "full_name": "Carlos Meza Huayta",
         "email": "carlos.meza@exellenti.edu.pe",
@@ -106,7 +106,7 @@ STAFF_ACCOUNTS = [
     },
     {
         "username": "rosa.vallejos",
-        "password": "Doc7#Ex26",
+        "clave": "Doc7#Ex26",
         "role": "docente",
         "full_name": "Rosa Vallejos Chávez",
         "email": "rosa.vallejos@exellenti.edu.pe",
@@ -117,7 +117,7 @@ STAFF_ACCOUNTS = [
     },
     {
         "username": "pedro.huayta",
-        "password": "Doc6#Ex26",
+        "clave": "Doc6#Ex26",
         "role": "docente",
         "full_name": "Pedro Huayta Gamarra",
         "email": "pedro.huayta@exellenti.edu.pe",
@@ -128,7 +128,7 @@ STAFF_ACCOUNTS = [
     },
     {
         "username": "lucia.ramos",
-        "password": "Doc5#Ex26",
+        "clave": "Doc5#Ex26",
         "role": "docente",
         "full_name": "Lucía Ramos Soto",
         "email": "lucia.ramos@exellenti.edu.pe",
@@ -139,7 +139,7 @@ STAFF_ACCOUNTS = [
     },
     {
         "username": "silvia.poma",
-        "password": "Doc9#Ex26",
+        "clave": "Doc9#Ex26",
         "role": "docente",
         "full_name": "Silvia Poma Flores",
         "email": "silvia.poma@exellenti.edu.pe",
@@ -150,7 +150,7 @@ STAFF_ACCOUNTS = [
     },
     {
         "username": "miguel.limay",
-        "password": "Doc10#Ex26",
+        "clave": "Doc10#Ex26",
         "role": "docente",
         "full_name": "Miguel Limaymanta Castro",
         "email": "miguel.limay@exellenti.edu.pe",
@@ -161,7 +161,7 @@ STAFF_ACCOUNTS = [
     },
     {
         "username": "hector.quispe",
-        "password": "Doc8#Ex26",
+        "clave": "Doc8#Ex26",
         "role": "docente",
         "full_name": "Héctor Quispe Ñahui",
         "email": "hector.quispe@exellenti.edu.pe",
@@ -173,15 +173,15 @@ STAFF_ACCOUNTS = [
 ]
 
 STUDENT_ACCOUNTS = [
-    {"slot": (3, "A", 1), "username": "alumno31", "password": "Est31#Ex26", "detalle": "3.° A · riesgo alto (demostración)"},
-    {"slot": (3, "A", 8), "username": "alumno38", "password": "Est38#Ex26", "detalle": "3.° A · rendimiento esperado"},
-    {"slot": (5, "A", 1), "username": "alumno51", "password": "Est51#Ex26", "detalle": "5.° A · riesgo alto"},
+    {"slot": (3, "A", 1), "username": "alumno31", "clave": "Est31#Ex26", "detalle": "3.° A · riesgo alto (demostración)"},
+    {"slot": (3, "A", 8), "username": "alumno38", "clave": "Est38#Ex26", "detalle": "3.° A · rendimiento esperado"},
+    {"slot": (5, "A", 1), "username": "alumno51", "clave": "Est51#Ex26", "detalle": "5.° A · riesgo alto"},
 ]
 
 LOGIN_SAMPLES = [
-    {"username": "directora", "password": "Dir#Ex26", "rol": "Directora"},
-    {"username": "maria.cerron", "password": "Doc1#Ex26", "rol": "Aula 1.° A"},
-    {"username": "carlos.meza", "password": "Doc4#Ex26", "rol": "Matemática 3.°–6.°"},
-    {"username": "hector.quispe", "password": "Doc8#Ex26", "rol": "Tutor 3.° A"},
-    {"username": "alumno31", "password": "Est31#Ex26", "rol": "Estudiante"},
+    {"username": "directora", "clave": "Dir#Ex26", "rol": "Directora"},
+    {"username": "maria.cerron", "clave": "Doc1#Ex26", "rol": "Aula 1.° A"},
+    {"username": "carlos.meza", "clave": "Doc4#Ex26", "rol": "Matemática 3.°–6.°"},
+    {"username": "hector.quispe", "clave": "Doc8#Ex26", "rol": "Tutor 3.° A"},
+    {"username": "alumno31", "clave": "Est31#Ex26", "rol": "Estudiante"},
 ]

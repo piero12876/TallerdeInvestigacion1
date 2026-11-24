@@ -9,8 +9,8 @@
 </div>
 <form class="row" method="get">
   <div>
-    <label>Sprint</label>
-    <select name="sprint" onchange="this.form.submit()">
+    <label for="fld-sprint-56">Sprint</label>
+    <select id="fld-sprint-56" name="sprint" onchange="this.form.submit()">
       <option value="">Todos</option>
       {% for s in sprints %}
         <option value="{{ s }}" {% if sprint == s %}selected{% endif %}>{{ s }}</option>
@@ -18,8 +18,8 @@
     </select>
   </div>
   <div>
-    <label>Estado</label>
-    <select name="estado" onchange="this.form.submit()">
+    <label for="fld-estado-57">Estado</label>
+    <select id="fld-estado-57" name="estado" onchange="this.form.submit()">
       <option value="">Todos</option>
       {% for e in estados %}
         <option value="{{ e }}" {% if estado == e %}selected{% endif %}>{{ e }}</option>
@@ -28,7 +28,7 @@
   </div>
 </form>
 <div class="card">
-<input data-row-filter="#tabla-scrum" placeholder="Filtrar ítem" style="margin-bottom:10px;width:100%;max-width:320px">
+<label class="sr-only" for="fld-campo-58">Filtrar ítem</label><input id="fld-campo-58" data-row-filter="#tabla-scrum" placeholder="Filtrar ítem" style="margin-bottom:10px;width:100%;max-width:320px">
 <table id="tabla-scrum">
   <thead><tr><th>Historia</th><th>Actor</th><th>Sprint</th><th>Estado</th><th>Criterio de aceptación</th></tr></thead>
   <tbody>

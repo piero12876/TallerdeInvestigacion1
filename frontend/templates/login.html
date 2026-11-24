@@ -20,12 +20,12 @@
       {% if error %}<div class="err" role="alert">{{ error }}</div>{% endif %}
       <div class="stack">
         <div>
-          <label>Usuario</label>
-          <input name="username" required autofocus minlength="3" maxlength="80" data-username title="Usuario de 3 a 80 caracteres (letras, números, punto o guion)." style="width:100%" autocomplete="username" spellcheck="false" value="{{ username or '' }}">
+          <label for="username">Usuario</label>
+          <input id="username" name="username" required minlength="3" maxlength="80" data-username title="Usuario de 3 a 80 caracteres (letras, números, punto o guion)." style="width:100%" autocomplete="username" spellcheck="false" value="{{ username or '' }}">
         </div>
         <div>
-          <label>Contraseña</label>
-          <input name="password" type="password" required maxlength="80" title="Ingrese la clave entregada por Dirección." style="width:100%" autocomplete="current-password">
+          <label for="clave">Contraseña</label>
+          <input id="clave" name="password" type="password" required maxlength="80" title="Ingrese la clave entregada por Dirección." style="width:100%" autocomplete="current-password">
         </div>
         <button class="btn" type="submit">Ingresar</button>
       </div>

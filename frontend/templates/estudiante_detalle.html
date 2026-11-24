@@ -97,9 +97,12 @@
         <p><b>Tutor de aula:</b> {{ tutor }}</p>
         <p><b>Quién dicta cada área</b></p>
         <table>
+          <thead><tr><th>Área</th><th>Docente</th></tr></thead>
+          <tbody>
           {% for d in docentes_aula %}
             <tr><td>{{ d.curso }}</td><td>{{ d.docente }}</td></tr>
           {% endfor %}
+          </tbody>
         </table>
       {% endif %}
     </div>
@@ -107,9 +110,12 @@
       {% if can_see_risk and features %}
       <h3 style="margin:0 0 10px">Variables del modelo</h3>
       <table>
+        <thead><tr><th>Variable</th><th>Valor</th></tr></thead>
+        <tbody>
         {% for k, v in features.items() %}
           <tr><td>{{ feature_labels.get(k, k) }}</td><td>{{ v }}</td></tr>
         {% endfor %}
+        </tbody>
       </table>
       {% endif %}
     </div>
@@ -145,9 +151,9 @@
   {% if can_follow %}
   <form method="post" action="/estudiantes/{{ student.id }}/seguimiento" class="stack" style="margin-top:10px">
     {% include "_csrf.html" %}
-    <textarea name="contenido" rows="3" required minlength="10" maxlength="2000" title="Mínimo 10 caracteres." placeholder="Observación de tutoría (mínimo 10 caracteres)"></textarea>
-    <label>Tipo</label>
-    <select name="tipo">
+    <label class="sr-only" for="fld-contenido-24">Observación de tutoría (mínimo 10 caracteres)</label><textarea id="fld-contenido-24" name="contenido" rows="3" required minlength="10" maxlength="2000" title="Mínimo 10 caracteres." placeholder="Observación de tutoría (mínimo 10 caracteres)"></textarea>
+    <label for="fld-tipo-23">Tipo</label>
+    <select id="fld-tipo-23" name="tipo">
       <option value="academico">Académico</option>
       <option value="asistencia">Asistencia</option>
       <option value="familiar">Familiar</option>

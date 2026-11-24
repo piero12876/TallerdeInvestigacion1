@@ -1,5 +1,6 @@
 import logging
 import threading
+from contextlib import asynccontextmanager
 from urllib.parse import urlparse
 
 from fastapi import FastAPI, Request
@@ -95,23 +96,6 @@ async def invalid_form(request: Request, _exc: RequestValidationError):
     return RedirectResponse(safe_next(path), status_code=303)
 
 
-@app.on_event("startup")
-def startup() -> None:
-    global _startup_error
-    try:
-        _startup()
-        _startup_error = ""
-    except Exception as exc:
-        logging.getLogger("exellenti").exception("La base no quedó lista")
-        text = str(exc).lower()
-        if "railway.internal" in DATABASE_URL:
-            _startup_error = "internal"
-        elif "password authentication failed" in text:
-            _startup_error = "auth"
-        else:
-            _startup_error = "db"
-
-
 def _startup() -> None:
     if (ON_RAILWAY or ON_VERCEL) and DATABASE_URL.startswith("sqlite"):
         logging.getLogger("exellenti").warning(
@@ -152,3 +136,24 @@ def _train_if_needed() -> None:
         logging.getLogger("exellenti").exception("El modelo no se entrenó; el ingreso sigue disponible")
     finally:
         db.close()
+
+
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    global _startup_error
+    try:
+        _startup()
+        _startup_error = ""
+    except Exception as exc:
+        logging.getLogger("exellenti").exception("La base no quedó lista")
+        text = str(exc).lower()
+        if "railway.internal" in DATABASE_URL:
+            _startup_error = "internal"
+        elif "password authentication failed" in text:
+            _startup_error = "auth"
+        else:
+            _startup_error = "db"
+    yield
+
+
+app.router.lifespan_context = _lifespan

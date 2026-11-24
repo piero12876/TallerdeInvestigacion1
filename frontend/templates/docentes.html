@@ -9,12 +9,12 @@
 </div>
 <form class="row" method="get">
   <div>
-    <label>Buscar</label>
-    <input name="q" value="{{ q }}" maxlength="80" placeholder="Nombre, usuario o especialidad">
+    <label for="q">Buscar</label>
+    <input id="q" name="q" value="{{ q }}" maxlength="80" placeholder="Nombre, usuario o especialidad">
   </div>
   <div>
-    <label>Rol de aula</label>
-    <select name="tutor" onchange="this.form.submit()">
+    <label for="fld-tutor-22">Rol de aula</label>
+    <select id="fld-tutor-22" name="tutor" onchange="this.form.submit()">
       <option value="0">Todos</option>
       <option value="1" {% if tutor %}selected{% endif %}>Solo tutores</option>
     </select>

@@ -13,8 +13,8 @@
 </div>
 <form class="row" method="get">
   <div>
-    <label>Salón</label>
-    <select name="grado" onchange="this.form.submit()">
+    <label for="fld-grado-36">Salón</label>
+    <select id="fld-grado-36" name="grado" onchange="this.form.submit()">
       <option value="0">Todos</option>
       {% for g in grades %}
         <option value="{{ g.id }}" {% if grado == g.id %}selected{% endif %}>{{ g.nombre }}</option>
@@ -22,24 +22,24 @@
     </select>
   </div>
   <div>
-    <label>Estado</label>
-    <select name="estado" onchange="this.form.submit()">
+    <label for="fld-estado-37">Estado</label>
+    <select id="fld-estado-37" name="estado" onchange="this.form.submit()">
       <option value="activo" {% if estado == 'activo' %}selected{% endif %}>Activos</option>
       <option value="retirado" {% if estado == 'retirado' %}selected{% endif %}>Retirados</option>
       <option value="todos" {% if estado == 'todos' %}selected{% endif %}>Todos</option>
     </select>
   </div>
   <div>
-    <label>Sexo</label>
-    <select name="sexo" onchange="this.form.submit()">
+    <label for="fld-sexo-38">Sexo</label>
+    <select id="fld-sexo-38" name="sexo" onchange="this.form.submit()">
       <option value="">Todos</option>
       <option value="M" {% if sexo == 'M' %}selected{% endif %}>M</option>
       <option value="F" {% if sexo == 'F' %}selected{% endif %}>F</option>
     </select>
   </div>
   <div>
-    <label>Lengua</label>
-    <select name="lengua" onchange="this.form.submit()">
+    <label for="fld-lengua-39">Lengua</label>
+    <select id="fld-lengua-39" name="lengua" onchange="this.form.submit()">
       <option value="">Todas</option>
       {% for k, lab in lengua_labels.items() %}
         <option value="{{ k }}" {% if lengua == k %}selected{% endif %}>{{ lab }}</option>
@@ -47,8 +47,8 @@
     </select>
   </div>
   <div>
-    <label>Tipo</label>
-    <select name="tipo" onchange="this.form.submit()">
+    <label for="fld-tipo-40">Tipo</label>
+    <select id="fld-tipo-40" name="tipo" onchange="this.form.submit()">
       <option value="">Todos</option>
       {% for k, lab in tipo_mat_labels.items() %}
         <option value="{{ k }}" {% if tipo == k %}selected{% endif %}>{{ lab }}</option>
@@ -56,16 +56,16 @@
     </select>
   </div>
   <div>
-    <label>NEE</label>
-    <select name="nnee" onchange="this.form.submit()">
+    <label for="fld-nnee-41">NEE</label>
+    <select id="fld-nnee-41" name="nnee" onchange="this.form.submit()">
       <option value="">Todos</option>
       <option value="1" {% if nnee == '1' %}selected{% endif %}>Con NEE</option>
       <option value="0" {% if nnee == '0' %}selected{% endif %}>Sin NEE</option>
     </select>
   </div>
   <div>
-    <label>Buscar</label>
-    <input name="q" value="{{ q }}" maxlength="80" placeholder="Nombre, código, DNI o apoderado" autocomplete="off">
+    <label for="q">Buscar</label>
+    <input id="q" name="q" value="{{ q }}" maxlength="80" placeholder="Nombre, código, DNI o apoderado" autocomplete="off">
   </div>
   <button class="btn sec" type="submit">Filtrar</button>
 </form>
@@ -78,7 +78,7 @@
 </div>
 {% endif %}
 <div class="card table-wrap">
-<input data-row-filter="#tabla-matricula" placeholder="Filtrar en la tabla" style="margin-bottom:10px;width:100%;max-width:320px">
+<label class="sr-only" for="fld-campo-42">Filtrar en la tabla</label><input id="fld-campo-42" data-row-filter="#tabla-matricula" placeholder="Filtrar en la tabla" style="margin-bottom:10px;width:100%;max-width:320px">
 <table id="tabla-matricula">
   <thead>
     <tr><th>Código</th><th>Estudiante</th><th>DNI</th><th>Sexo</th><th>Edad</th><th>Salón</th><th>Tipo</th><th>Apoderado</th><th>Estado</th></tr>

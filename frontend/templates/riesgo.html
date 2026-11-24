@@ -10,8 +10,8 @@
 </div>
 <form class="row" method="get">
   <div>
-    <label>Nivel de atención</label>
-    <select name="nivel" onchange="this.form.submit()">
+    <label for="fld-nivel-52">Nivel de atención</label>
+    <select id="fld-nivel-52" name="nivel" onchange="this.form.submit()">
       <option value="">Todos</option>
       {% for v in ['alto','medio','bajo'] %}
         <option value="{{ v }}" {% if nivel == v %}selected{% endif %}>{{ v }}</option>
@@ -19,8 +19,8 @@
     </select>
   </div>
   <div>
-    <label>Salón</label>
-    <select name="grado" onchange="this.form.submit()">
+    <label for="fld-grado-53">Salón</label>
+    <select id="fld-grado-53" name="grado" onchange="this.form.submit()">
       <option value="0">Todos</option>
       {% for g in grades %}
         <option value="{{ g.id }}" {% if grado == g.id %}selected{% endif %}>{{ g.nombre }}</option>
@@ -28,15 +28,15 @@
     </select>
   </div>
   <div>
-    <label>Discrepancia</label>
-    <select name="disc" onchange="this.form.submit()">
+    <label for="fld-disc-54">Discrepancia</label>
+    <select id="fld-disc-54" name="disc" onchange="this.form.submit()">
       <option value="0">Todas</option>
       <option value="1" {% if disc %}selected{% endif %}>Modelo ≠ atención</option>
     </select>
   </div>
   <div>
-    <label>Buscar</label>
-    <input name="q" value="{{ q }}" maxlength="80" placeholder="Nombre o código">
+    <label for="q">Buscar</label>
+    <input id="q" name="q" value="{{ q }}" maxlength="80" placeholder="Nombre o código">
   </div>
   <button class="btn sec" type="submit">Filtrar</button>
 </form>
@@ -53,7 +53,7 @@
   <div data-bars='{{ [{"label":"Alto","value":n_alto,"color":"#b42318"},{"label":"Medio","value":n_medio,"color":"#b58112"},{"label":"Bajo","value":n_bajo,"color":"#1f7a4d"}] | tojson }}'></div>
 </div>
 <div class="card table-wrap">
-<input data-row-filter="#tabla-alerta" placeholder="Filtrar en la tabla" style="margin-bottom:10px;width:100%;max-width:320px">
+<label class="sr-only" for="fld-campo-55">Filtrar en la tabla</label><input id="fld-campo-55" data-row-filter="#tabla-alerta" placeholder="Filtrar en la tabla" style="margin-bottom:10px;width:100%;max-width:320px">
 <table id="tabla-alerta">
   <thead>
     <tr><th>Prioridad</th><th>Estudiante</th><th>Salón</th><th>Probabilidad</th><th>Modelo</th><th>Atención</th><th></th></tr>

@@ -10,8 +10,8 @@
 {% if error %}<div class="err" role="alert">{{ error }}</div>{% endif %}
 <form class="row" method="get">
   <div>
-    <label>Rol</label>
-    <select name="rol" onchange="this.form.submit()">
+    <label for="fld-rol-62">Rol</label>
+    <select id="fld-rol-62" name="rol" onchange="this.form.submit()">
       <option value="">Todos</option>
       {% for r, lab in role_labels.items() %}
         <option value="{{ r }}" {% if rol == r %}selected{% endif %}>{{ lab }}</option>
@@ -19,16 +19,16 @@
     </select>
   </div>
   <div>
-    <label>Estado</label>
-    <select name="estado" onchange="this.form.submit()">
+    <label for="fld-estado-63">Estado</label>
+    <select id="fld-estado-63" name="estado" onchange="this.form.submit()">
       <option value="">Todos</option>
       <option value="activo" {% if estado == 'activo' %}selected{% endif %}>Activos</option>
       <option value="inactivo" {% if estado == 'inactivo' %}selected{% endif %}>Inactivos</option>
     </select>
   </div>
   <div>
-    <label>Buscar</label>
-    <input name="q" value="{{ q }}" maxlength="80" placeholder="Usuario o nombre" autocomplete="off">
+    <label for="q">Buscar</label>
+    <input id="q" name="q" value="{{ q }}" maxlength="80" placeholder="Usuario o nombre" autocomplete="off">
   </div>
   <button class="btn sec" type="submit">Filtrar</button>
 </form>
@@ -62,23 +62,23 @@
     <form method="post" action="/usuarios" class="stack">
       {% include "_csrf.html" %}
       <div>
-        <label>Usuario (letras, números, punto o guion)</label>
-        <input name="username" required minlength="3" maxlength="80" data-username pattern="[a-z0-9][a-z0-9._-]{2,79}" title="Mínimo 3. Solo letras minúsculas, números, punto o guion." spellcheck="false" autocomplete="off" style="width:100%" value="{{ form.username if form else '' }}">
+        <label for="username">Usuario (letras, números, punto o guion)</label>
+        <input id="username" name="username" required minlength="3" maxlength="80" data-username pattern="[a-z0-9][a-z0-9._-]{2,79}" title="Mínimo 3. Solo letras minúsculas, números, punto o guion." spellcheck="false" autocomplete="off" style="width:100%" value="{{ form.username if form else '' }}">
       </div>
       <div>
-        <label>Nombre completo</label>
-        <input name="full_name" required minlength="2" maxlength="80" data-letters pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .\-]{2,80}" title="Solo letras, espacios y tildes. Sin números." style="width:100%" value="{{ form.full_name if form else '' }}">
+        <label for="full_name">Nombre completo</label>
+        <input id="full_name" name="full_name" required minlength="2" maxlength="80" data-letters pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' .\-]{2,80}" title="Solo letras, espacios y tildes. Sin números." style="width:100%" value="{{ form.full_name if form else '' }}">
       </div>
       <div>
-        <label>Rol</label>
-        <select name="role" required>
+        <label for="fld-role-64">Rol</label>
+        <select id="fld-role-64" name="role" required>
           <option value="docente" {% if not form or form.role == 'docente' %}selected{% endif %}>Docente</option>
           <option value="estudiante" {% if form and form.role == 'estudiante' %}selected{% endif %}>Estudiante</option>
         </select>
       </div>
       <div>
-        <label>Clave temporal (mín. 8, letras y números)</label>
-        <input name="password" type="password" required minlength="8" maxlength="80" pattern="(?=.*[A-Za-zÁÉÍÓÚáéíóúñÑ])(?=.*[0-9]).{8,80}" title="Mínimo 8 caracteres, con letras y números." style="width:100%" autocomplete="new-password">
+        <label for="fld-password-65">Clave temporal (mín. 8, letras y números)</label>
+        <input id="fld-password-65" name="password" type="password" required minlength="8" maxlength="80" pattern="(?=.*[A-Za-zÁÉÍÓÚáéíóúñÑ])(?=.*[0-9]).{8,80}" title="Mínimo 8 caracteres, con letras y números." style="width:100%" autocomplete="new-password">
       </div>
       <button class="btn" type="submit">Crear usuario</button>
     </form>
