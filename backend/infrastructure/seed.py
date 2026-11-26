@@ -75,8 +75,23 @@ def _full(nombres: str, apellidos: str) -> str:
 
 def seed_if_empty(db: Session) -> None:
     if db.query(User).first():
+        ensure_director_account(db)
         return
     _seed(db)
+
+
+def ensure_director_account(db: Session) -> None:
+    """Actualiza la cuenta de dirección ya creada, sin borrar la matrícula."""
+    current = db.query(User).filter_by(username="director").first()
+    previous = db.query(User).filter_by(username="directora").first()
+    account = current or previous
+    if account is None:
+        return
+    if previous and not current:
+        account.username = "director"
+    account.full_name = "Edgar David Advincua Porras"
+    account.role = Role.DIRECTORA.value
+    db.commit()
 
 
 def _make_teacher(db: Session, username: str, full_name: str, password: str, especialidad: str, dni: str) -> TeacherProfile:
@@ -286,7 +301,7 @@ def _seed(db: Session) -> None:
         db.flush()
         _fill_academic(db, student, courses, profile=profile, days=30)
 
-    direccion = db.query(User).filter(User.username == "directora").first()
+    direccion = db.query(User).filter(User.username == "director").first()
     tutor_3a = db.query(User).filter(User.username == "hector.quispe").first()
     caso_alto = db.query(Student).filter(Student.codigo == f"EX{ANIO_LECTIVO}3A01").first()
     caso_medio = db.query(Student).filter(Student.codigo == f"EX{ANIO_LECTIVO}3A02").first()
@@ -454,7 +469,7 @@ def _next_weekday(start: date, steps: int) -> date:
 def _seed_citas(db: Session) -> None:
     if db.query(TutoringAppointment).first():
         return
-    director = db.query(User).filter_by(username="directora").first()
+    director = db.query(User).filter_by(username="director").first()
     students = (
         db.query(Student)
         .filter(Student.es_historico.is_(False), Student.estado == StudentStatus.ACTIVO.value)

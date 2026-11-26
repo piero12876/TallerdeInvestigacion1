@@ -1,6 +1,6 @@
 """Cuentas institucionales del entorno de tesis.
 
-Roles reales: Directora (gestiona la IE), docente y estudiante.
+Roles reales: director (gestiona la IE), docente y estudiante.
 1.° y 2.°: un docente de aula dicta todas las áreas y es el tutor.
 Desde 3.°: el tutor solo es encargado del salón; cada área la dicta un especialista
 que puede enseñar el mismo curso en varios grados y secciones.
@@ -8,10 +8,10 @@ que puede enseñar el mismo curso en varios grados y secciones.
 
 STAFF_ACCOUNTS = [
     {
-        "username": "directora",
+        "username": "director",
         "clave": "Dir#Ex26",
         "role": "directora",
-        "full_name": "Rosa Elena Huamán Cerrón",
+        "full_name": "Edgar David Advincua Porras",
         "email": "direccion@exellenti.edu.pe",
         "phone": "964111001",
         "detalle": "Dirección de la IE",
@@ -179,7 +179,7 @@ STUDENT_ACCOUNTS = [
 ]
 
 LOGIN_SAMPLES = [
-    {"username": "directora", "clave": "Dir#Ex26", "rol": "Directora"},
+    {"username": "director", "clave": "Dir#Ex26", "rol": "Director"},
     {"username": "maria.cerron", "clave": "Doc1#Ex26", "rol": "Aula 1.° A"},
     {"username": "carlos.meza", "clave": "Doc4#Ex26", "rol": "Matemática 3.°–6.°"},
     {"username": "hector.quispe", "clave": "Doc8#Ex26", "rol": "Tutor 3.° A"},

@@ -37,7 +37,7 @@ opener = build_opener(HTTPCookieProcessor(CookieJar()))
 html = opener.open(BASE + "/login").read().decode()
 assert "Dir#Ex26" not in html
 csrf = re.search(r'name="csrf" value="([^"]+)"', html).group(1)
-data = urlencode({"username": "directora", "password": "Dir#Ex26", "csrf": csrf}).encode()
+data = urlencode({"username": "director", "password": "Dir#Ex26", "csrf": csrf}).encode()
 opener.open(Request(BASE + "/login", data=data, method="POST"))
 body = opener.open(BASE + "/").read().decode()
 assert "Panel de dirección" in body

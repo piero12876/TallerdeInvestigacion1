@@ -17,6 +17,9 @@ def nav_for(user) -> list[dict]:
         {"href": "/cuenta", "label": "Cambiar contraseña"},
         {"href": "/logout", "label": "Salir"},
     ]
+    nosotros = {"group": "Sobre nosotros", "links": [
+        {"href": "/sobre-nosotros", "label": "Sobre nosotros"},
+    ]}
     if role == Role.ESTUDIANTE.value:
         return [
             {"group": "Portal", "links": [
@@ -25,6 +28,7 @@ def nav_for(user) -> list[dict]:
                 {"href": "/mi-boleta", "label": "Mi boleta"},
                 {"href": "/mi-asistencia", "label": "Mi asistencia"},
             ]},
+            nosotros,
             {"group": "Cuenta", "links": cuenta},
         ]
     if role == Role.DOCENTE.value:
@@ -47,6 +51,7 @@ def nav_for(user) -> list[dict]:
         ])
         return [
             {"group": "Aula", "links": aula},
+            nosotros,
             {"group": "Cuenta", "links": cuenta},
         ]
     return [
@@ -64,10 +69,11 @@ def nav_for(user) -> list[dict]:
             {"href": "/institucion", "label": "La institución"},
             {"href": "/docentes", "label": "Personal docente"},
             {"href": "/modelo", "label": "Modelo predictivo"},
-            {"href": "/usuarios", "label": "Usuarios"},
+            {"href": "/usuarios", "label": "Usuarios institucionales"},
             {"href": "/auditoria", "label": "Bitácora"},
             {"href": "/scrum", "label": "Product Backlog"},
         ]},
+        nosotros,
         {"group": "Cuenta", "links": cuenta},
     ]
 

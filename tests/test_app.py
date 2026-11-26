@@ -74,13 +74,13 @@ def test_login_rejects_wrong_password(client):
     page = client.get("/login")
     response = client.post(
         "/login",
-        data={"username": "directora", "password": "Exellenti2026", "csrf": csrf_token(page.text)},
+        data={"username": "director", "password": "Exellenti2026", "csrf": csrf_token(page.text)},
     )
     assert response.status_code == 401
 
 
 def test_login_director_dashboard(client):
-    response = login(client, "directora", "Dir#Ex26")
+    response = login(client, "director", "Dir#Ex26")
     assert response.status_code == 200
     assert "Panel de dirección" in response.text
     assert "La institución" in response.text
@@ -133,7 +133,7 @@ def test_student_sees_tutor_teachers_and_risk(client):
 
 
 def test_grades_persist(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     db = SessionLocal()
     grade = db.query(SchoolGrade).filter_by(nivel=1, seccion="A").first()
     course = db.query(Course).filter_by(codigo="MAT").first()
@@ -174,7 +174,7 @@ def test_grades_persist(client):
 
 
 def test_csrf_rejects_empty_token(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     response = client.post("/usuarios", data={
         "username": "intruso",
         "full_name": "Intruso",
@@ -186,7 +186,7 @@ def test_csrf_rejects_empty_token(client):
 
 
 def test_modules_are_isolated(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     matricula = client.get("/estudiantes")
     assert "Matrícula" in matricula.text
     assert ">Riesgo<" not in matricula.text
@@ -206,7 +206,7 @@ def test_modules_are_isolated(client):
 
 
 def test_reportes_csv_and_roles(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     page = client.get("/reportes")
     assert page.status_code == 200
     assert "Reportes" in page.text
@@ -219,7 +219,7 @@ def test_reportes_csv_and_roles(client):
 
 
 def test_alerta_filters_by_salon(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     db = SessionLocal()
     grade = db.query(SchoolGrade).filter_by(nivel=1, seccion="A").first()
     db.close()
@@ -231,7 +231,7 @@ def test_alerta_filters_by_salon(client):
 
 
 def test_invalid_birth_is_rejected(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     page = client.get("/estudiantes/nuevo")
     response = client.post(
         "/estudiantes/nuevo",
@@ -252,7 +252,7 @@ def test_invalid_birth_is_rejected(client):
 
 
 def test_dni_rejects_letters(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     page = client.get("/estudiantes/nuevo")
     response = client.post(
         "/estudiantes/nuevo",
@@ -273,7 +273,7 @@ def test_dni_rejects_letters(client):
 
 
 def test_invalid_dni_is_rejected(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     page = client.get("/estudiantes/nuevo")
     response = client.post(
         "/estudiantes/nuevo",
@@ -293,7 +293,7 @@ def test_invalid_dni_is_rejected(client):
 
 
 def test_attendance_rejects_weekend(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     db = SessionLocal()
     grade = db.query(SchoolGrade).filter_by(nivel=1, seccion="A").first()
     page = client.get(f"/asistencia?grado={grade.id}")
@@ -312,7 +312,7 @@ def test_login_ignores_external_next(client):
     response = client.post(
         "/login",
         data={
-            "username": "directora",
+            "username": "director",
             "password": "Dir#Ex26",
             "csrf": csrf_token(page.text),
             "next": "https://evil.example",
@@ -324,7 +324,7 @@ def test_login_ignores_external_next(client):
 
 
 def test_auditoria_staff_only(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     page = client.get("/auditoria")
     assert page.status_code == 200
     assert "Bitácora" in page.text
@@ -334,7 +334,7 @@ def test_auditoria_staff_only(client):
 
 
 def test_password_rejects_same_as_current(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     page = client.get("/cuenta")
     response = client.post(
         "/cuenta",
@@ -399,7 +399,7 @@ def test_static_assets_load(client):
 
 
 def test_director_pages_do_not_500(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     db = SessionLocal()
     grade = db.query(SchoolGrade).filter_by(nivel=1, seccion="A").first()
     course = db.query(Course).filter_by(codigo="MAT").first()
@@ -532,7 +532,7 @@ def test_student_portal_pages(client):
 
 
 def test_enroll_and_reject_bad_fields(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     page = client.get("/estudiantes/nuevo")
     token = csrf_token(page.text)
     bad_phone = client.post(
@@ -599,7 +599,7 @@ def test_enroll_and_reject_bad_fields(client):
 
 
 def test_ficha_saves_context_and_rejects_bad_email(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     page = client.get("/estudiantes/nuevo")
     token = csrf_token(page.text)
     bad = client.post(
@@ -672,7 +672,7 @@ def test_ficha_saves_context_and_rejects_bad_email(client):
 
 
 def test_followup_too_short_and_valid(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     db = SessionLocal()
     student = db.query(Student).filter_by(es_historico=False).first()
     sid = student.id
@@ -694,7 +694,7 @@ def test_followup_too_short_and_valid(client):
 
 
 def test_grades_omit_out_of_range(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     db = SessionLocal()
     grade = db.query(SchoolGrade).filter_by(nivel=1, seccion="A").first()
     course = db.query(Course).filter_by(codigo="COM").first()
@@ -716,7 +716,7 @@ def test_grades_omit_out_of_range(client):
 
 
 def test_attendance_saves_weekday(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     db = SessionLocal()
     grade = db.query(SchoolGrade).filter_by(nivel=1, seccion="A").first()
     student = db.query(Student).filter_by(grade_id=grade.id, es_historico=False).first()
@@ -770,9 +770,9 @@ def test_teacher_cannot_save_foreign_grade(client):
 
 
 def test_user_cannot_deactivate_self(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     db = SessionLocal()
-    me = db.query(User).filter_by(username="directora").first()
+    me = db.query(User).filter_by(username="director").first()
     uid = me.id
     db.close()
     page = client.get("/usuarios")
@@ -798,7 +798,7 @@ def test_user_cannot_deactivate_self(client):
 
 
 def test_filters_reduce_lists(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     all_rows = client.get("/estudiantes")
     one = client.get("/estudiantes?q=Quispe&sexo=F")
     assert "registros" in all_rows.text
@@ -814,7 +814,7 @@ def test_filters_reduce_lists(client):
 
 
 def test_malformed_ids_do_not_500(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     r = client.get("/estudiantes/no-es-id", follow_redirects=True)
     assert r.status_code == 200
     assert "Internal Server Error" not in r.text
@@ -824,7 +824,7 @@ def test_malformed_ids_do_not_500(client):
 
 
 def test_citas_filters_and_validation(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     db = SessionLocal()
     own = db.query(Student).filter_by(es_historico=False, estado="activo").order_by(Student.id).first()
     foreign = (
@@ -881,7 +881,7 @@ def test_citas_filters_and_validation(client):
 
 
 def test_correlacion_y_justificacion(client):
-    login(client, "directora", "Dir#Ex26")
+    login(client, "director", "Dir#Ex26")
     page = client.get("/reportes?tipo=correlacion")
     assert page.status_code == 200
     assert "Correlación" in page.text

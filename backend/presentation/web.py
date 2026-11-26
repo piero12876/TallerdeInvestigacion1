@@ -2142,6 +2142,14 @@ def audit_page(request: Request, accion: str = "", q: str = "", db: Session = De
     )
 
 
+@router.get("/sobre-nosotros")
+def about_page(request: Request, db: Session = Depends(db_session)):
+    user = current_user(request, db)
+    if not user:
+        return login_redirect("/sobre-nosotros")
+    return templates.TemplateResponse("sobre_nosotros.html", ctx(request, user))
+
+
 @router.get("/institucion")
 def institution_page(request: Request, db: Session = Depends(db_session)):
     user = current_user(request, db)

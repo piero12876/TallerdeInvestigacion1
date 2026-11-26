@@ -10,7 +10,7 @@ class Role(str, Enum):
 
 
 ROLE_LABELS = {
-    "directora": "Directora",
+    "directora": "Director",
     "docente": "Docente",
     "estudiante": "Estudiante",
 }

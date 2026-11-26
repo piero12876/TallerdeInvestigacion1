@@ -109,7 +109,7 @@ def institution_snapshot(db: Session) -> dict:
         "cursos": courses,
         "tutor_map": tutor_map,
         "role_labels": {
-            Role.DIRECTORA.value: "Directora",
+            Role.DIRECTORA.value: "Director",
             Role.DOCENTE.value: "Docentes",
             Role.ESTUDIANTE.value: "Estudiantes con usuario",
         },

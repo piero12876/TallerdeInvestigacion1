@@ -52,7 +52,7 @@ No se muestran en la pantalla de ingreso. Sirven igual en Vercel y en Railway.
 
 | Usuario | Clave | Nombre | Ve |
 |---|---|---|---|
-| `directora` | `Dir#Ex26` | Rosa Elena Huamán Cerrón | Toda la IE: matrícula, evaluación, asistencia, alerta, citas, seguimientos, reportes, modelo, usuarios y backlog |
+| `director` | `Dir#Ex26` | Edgar David Advincua Porras | Toda la IE: matrícula, evaluación, asistencia, alerta, citas, seguimientos, reportes, modelo, usuarios y backlog |
 
 ### Docentes de aula (1.° y 2.°, todas las áreas y tutoría)
 

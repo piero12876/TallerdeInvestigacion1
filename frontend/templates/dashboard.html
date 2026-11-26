@@ -17,6 +17,7 @@
   <a class="mod" href="/citas"><span class="k">Agenda</span><strong>{{ citas_pendientes }}</strong><span>Citas programadas desde hoy</span></a>
   <a class="mod" href="/docentes"><span class="k">Personal</span><strong>{{ snap.docentes }}</strong><span>Aula 1.°–2.° · área desde 3.°</span></a>
   <a class="mod" href="/modelo"><span class="k">Modelo</span><strong>{{ snap.tutores }}</strong><span>Tutores · métricas OOF</span></a>
+  <a class="mod" href="/sobre-nosotros"><span class="k">Sobre nosotros</span><strong>IE</strong><span>Misión, visión y sedes</span></a>
 </div>
 <div class="card" style="margin-bottom:16px">
   <h3 style="margin:0 0 10px">Atención en la IE</h3>
@@ -53,6 +54,7 @@
   <a class="mod" href="/citas"><span class="k">Agenda</span><strong>{{ citas_pendientes }}</strong><span>Citas programadas de mi carga</span></a>
   <a class="mod" href="/seguimientos"><span class="k">Seguimientos</span><strong>•</strong><span>Notas de tutoría de mi carga</span></a>
   <a class="mod" href="/reportes"><span class="k">Reportes</span><strong>{{ panel.salones }}</strong><span>CSV e impresión de mi carga</span></a>
+  <a class="mod" href="/sobre-nosotros"><span class="k">Sobre nosotros</span><strong>IE</strong><span>Misión, visión y sedes</span></a>
 </div>
 {% if panel.cargas %}
 <div class="card" style="margin-bottom:16px">
@@ -86,6 +88,7 @@
 
 {% elif user.role == 'estudiante' and student %}
 <div class="mods">
+  <a class="mod" href="/sobre-nosotros"><span class="k">Sobre nosotros</span><strong>IE</strong><span>Misión, visión y sedes</span></a>
   <a class="mod" href="/mi-ficha"><span class="k">Mi ficha</span><strong>{{ student.codigo }}</strong><span>Tutor: {{ tutor }}</span></a>
   <a class="mod" href="/mi-boleta"><span class="k">Mi boleta</span><strong>{{ progress.promedio if progress else '—' }}</strong><span>Promedio de los cuatro bimestres</span></a>
   <a class="mod" href="/mi-asistencia"><span class="k">Mi asistencia</span><strong>{{ progress.asistencia_bars[0].value if progress and progress.asistencia_bars else 0 }}</strong><span>Días presente registrados</span></a>
