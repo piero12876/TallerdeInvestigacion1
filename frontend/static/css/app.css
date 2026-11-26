@@ -124,10 +124,48 @@ input:focus, select:focus, textarea:focus, .btn:focus-visible, .menu-btn:focus-v
   outline-offset: 2px;
 }
 .login-wrap {
-  min-height: 100vh; display: grid; place-items: center;
-  background: var(--side);
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 18px;
+  overflow: hidden;
+  background: #163a7a;
 }
-.login { width: min(420px, calc(100vw - 28px)); background: #fffdf8; border-radius: 12px; padding: 28px; border-top: 4px solid var(--accent); }
+.login-bg {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(760px, 96vw);
+  height: min(760px, 96vw);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  object-fit: cover;
+  opacity: 0.55;
+  pointer-events: none;
+}
+.login-panel {
+  position: relative;
+  z-index: 1;
+  width: min(980px, 100%);
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 36px;
+  align-items: center;
+}
+.login-copy h1 {
+  margin: 0 0 16px;
+  color: #fff;
+  font-size: 34px;
+  line-height: 1.2;
+}
+.login-copy p {
+  margin: 0;
+  color: #f4f7fb;
+  font-size: 17px;
+  line-height: 1.55;
+}
+.login { width: 100%; background: #fffdf8; border-radius: 12px; padding: 28px; border-top: 4px solid var(--accent); }
 .login h1 { font-size: 22px; }
 .stack { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
 .err { background: #f8d7d4; color: var(--bad); padding: 8px 10px; border-radius: 6px; font-size: 13px; margin-bottom: 12px; }
@@ -180,7 +218,8 @@ input[data-row-filter] { font: inherit; padding: 7px 9px; border: 1px solid var(
   .side.is-open .nav { display: flex; }
   .side.is-open .who { display: block; }
   .nav a { padding: 12px 10px; }
-  .grid, .two, .mods, .form-grid { grid-template-columns: 1fr; }
+  .grid, .two, .mods, .form-grid, .login-panel { grid-template-columns: 1fr; }
+  .login-copy h1 { font-size: 26px; }
   .main { max-width: none; padding: 16px 14px 48px; }
   .top { flex-direction: column; align-items: stretch; }
   .ficha dl { grid-template-columns: 1fr; gap: 2px; }

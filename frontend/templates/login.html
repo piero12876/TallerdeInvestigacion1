@@ -7,16 +7,19 @@
   <meta name="theme-color" content="#1e3a5f">
   <title>Ingreso · IE Exellenti</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/css/app.css?v=3">
+  <link rel="stylesheet" href="/static/css/app.css?v=5">
 </head>
 <body>
   <div class="login-wrap">
+    <img class="login-bg" src="/static/logo-exellenti.png" alt="">
+    <div class="login-panel">
+      <div class="login-copy">
+        <h1>Bienvenido al sistema web de Exellenti</h1>
+        <p>Somos una institución educativa apasionada por las familias, creada para formar a niños y jóvenes que liderarán y transformarán al mundo en uno más competitivo, justo, responsable y respetuoso de tal manera que cumplan los propósitos de Dios.</p>
+      </div>
     <form class="login" method="post" action="/login" autocomplete="on">
       {% include "_csrf.html" %}
       {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
-      <div class="brand" style="color:#5c6b75">Sistema de la Institución Educativa</div>
-      <h1>Exellenti · El Tambo</h1>
-      <p class="sub">Primaria {{ anio if anio is defined else 2026 }} · Huancayo. Ingrese con el usuario entregado por Dirección.</p>
       {% if error %}<div class="err" role="alert">{{ error }}</div>{% endif %}
       <div class="stack">
         <div>
@@ -29,8 +32,9 @@
         </div>
         <button class="btn" type="submit">Ingresar</button>
       </div>
-      <p class="muted" style="margin-top:14px;font-size:12px">Si no tiene usuario, solicítelo a la dirección de la IE. Las credenciales del entorno de tesis están en el README del proyecto, no en esta pantalla.</p>
+      <p class="muted" style="margin-top:14px;font-size:12px">Si no tiene usuario, solicítelo a la dirección de la IE.</p>
     </form>
+    </div>
   </div>
   <script src="/static/js/app.js?v=2"></script>
 </body>
