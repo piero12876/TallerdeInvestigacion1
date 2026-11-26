@@ -215,11 +215,22 @@ input:focus, select:focus, textarea:focus, .btn:focus-visible, .menu-btn:focus-v
 .bad { color: var(--bad); }
 .muted { color: var(--muted); }
 .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.about-layout { display: grid; grid-template-columns: minmax(220px, 360px) minmax(0, 1fr); gap: 20px; align-items: start; }
-.about-photo { margin: 0; }
-.about-photo img { width: 100%; height: auto; display: block; border-radius: 16px; border: 1px solid var(--line); }
-.about-copy { display: grid; gap: 16px; }
+.about-screen {
+  max-width: none;
+  min-height: 100vh;
+  background:
+    linear-gradient(105deg, rgba(8, 22, 52, 0.82) 0%, rgba(8, 22, 52, 0.62) 42%, rgba(8, 22, 52, 0.38) 100%),
+    url("/static/colegio-nosotros.png") center / cover no-repeat;
+}
+.about-screen h1 { color: #fff; }
+.about-screen .sub { color: #e7eef6; }
+.about-copy { display: grid; gap: 16px; max-width: 720px; }
 .about-copy .card p { margin: 0; line-height: 1.55; }
+.users-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+.users-layout table { width: 100%; }
+.users-layout td, .users-layout th { vertical-align: middle; }
+.users-layout td:nth-child(2) { min-width: 14rem; }
+.users-layout .btn { white-space: nowrap; }
 .table-wrap { overflow-x: auto; }
 .bar { height: 10px; background: #e6ecef; border-radius: 99px; overflow: hidden; }
 .bar > span { display: block; height: 100%; }
@@ -259,7 +270,7 @@ input[data-row-filter] { font: inherit; padding: 7px 9px; border: 1px solid var(
   .side.is-open .nav { display: flex; }
   .side.is-open .who { display: block; }
   .nav a { padding: 12px 10px; }
-  .grid, .two, .mods, .form-grid, .login-panel, .about-layout { grid-template-columns: 1fr; }
+  .grid, .two, .mods, .form-grid, .login-panel, .users-layout { grid-template-columns: 1fr; }
   .login-wrap::after { background: rgba(8, 22, 52, 0.72); }
   .main { max-width: none; padding: 16px 14px 48px; }
   .top { flex-direction: column; align-items: stretch; }

@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/app.css?v=8">
+  <link rel="stylesheet" href="/static/css/app.css?v=9">
 </head>
 <body>
 <div class="layout">
@@ -34,7 +34,7 @@
       <span class="muted">Año lectivo {{ anio }}</span>
     </div>
   </aside>
-  <main class="main">
+  <main class="main {% block main_class %}{% endblock %}">
     {% if flash %}<div class="err" role="alert">{{ flash }}</div>{% endif %}
     {% if flash_ok %}<div class="ok" role="status">{{ flash_ok }}</div>{% endif %}
     {% block content %}{% endblock %}
