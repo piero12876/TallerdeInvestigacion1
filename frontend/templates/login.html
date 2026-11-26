@@ -7,15 +7,24 @@
   <meta name="theme-color" content="#1e3a5f">
   <title>Ingreso · IE Exellenti</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/css/app.css?v=5">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/app.css?v=7">
 </head>
 <body>
   <div class="login-wrap">
-    <img class="login-bg" src="/static/logo-exellenti.png" alt="">
+    <img class="login-bg" src="/static/colegio-exellenti.png" alt="">
     <div class="login-panel">
       <div class="login-copy">
+        <img class="login-mark" src="/static/logo-exellenti.png" alt="">
         <h1>Bienvenido al sistema web de Exellenti</h1>
         <p>Somos una institución educativa apasionada por las familias, creada para formar a niños y jóvenes que liderarán y transformarán al mundo en uno más competitivo, justo, responsable y respetuoso de tal manera que cumplan los propósitos de Dios.</p>
+        <ul class="login-sedes">
+          <li><b>Chupaca</b> 981 819 115</li>
+          <li><b>Huancayo</b> 981 819 112</li>
+          <li><b>Cajas</b> 981 819 113</li>
+        </ul>
       </div>
     <form class="login" method="post" action="/login" autocomplete="on">
       {% include "_csrf.html" %}
